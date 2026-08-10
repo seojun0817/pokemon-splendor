@@ -1,0 +1,200 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: #ffffff; min-width: 1200px; }
+
+/* ====================================================
+   🎮 대기실 (Lobby) 스타일
+   ==================================================== */
+#lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #111319; }
+#lobby h1 { font-size: 2.5rem; color: #ffcb05; text-shadow: 2px 2px #3d7dca; margin-bottom: 20px; }
+
+.lobby-box { background: #252836; padding: 20px 30px; border-radius: 12px; display: flex; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.lobby-box input { padding: 12px 16px; border-radius: 6px; border: 1px solid #444; font-size: 1rem; background: #1a1c23; color: #fff; }
+.lobby-box button { padding: 12px 20px; border-radius: 6px; border: none; background: #ffcb05; color: #111; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.lobby-box button:hover { background: #ffe066; }
+
+/* 💡 대기실 현황 카드 박스 */
+#lobby-players-container {
+  margin-top: 25px;
+  background: #252836;
+  padding: 20px;
+  border-radius: 12px;
+  width: 380px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+#lobby-players-container h3 {
+  font-size: 1rem;
+  color: #a0a5b5;
+  margin-bottom: 15px;
+  text-align: center;
+  border-bottom: 1px solid #333849;
+  padding-bottom: 8px;
+}
+#lobby-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lobby-player-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1a1c23;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #333849;
+}
+.lobby-player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ffcb05;
+  object-fit: cover;
+}
+.lobby-player-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.lobby-player-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.lobby-player-trainer {
+  font-size: 0.75rem;
+  color: #a0a5b5;
+}
+.lobby-empty {
+  text-align: center;
+  color: #777;
+  font-size: 0.85rem;
+  padding: 10px 0;
+}
+
+/* ====================================================
+   🖥️ PC 데스크톱 메인 대시보드 레이아웃
+   ==================================================== */
+#game-container { display: flex; flex-direction: column; height: 100vh; }
+.top-header { display: flex; justify-content: space-between; align-items: center; background: #252836; padding: 10px 24px; border-bottom: 2px solid #333849; }
+.logo { font-size: 1.3rem; font-weight: 900; color: #ffcb05; text-shadow: 1px 1px #3d7dca; }
+.turn-indicator { display: flex; align-items: center; gap: 10px; background: #1a1c23; padding: 4px 14px; border-radius: 20px; border: 1px solid #ffcb05; }
+.turn-name { font-size: 1rem; font-weight: bold; color: #ffcb05; }
+.avatar-small { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ffcb05; object-fit: cover; }
+
+.dashboard-layout { display: flex; gap: 16px; padding: 16px; flex: 1; overflow: hidden; }
+.panel-title { font-weight: bold; font-size: 1.05rem; color: #a0a5b5; margin-bottom: 10px; border-bottom: 1px solid #333849; padding-bottom: 6px; }
+
+/* 1. 좌측 토큰 창고 */
+.sidebar-tokens { width: 210px; background: #252836; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+.token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.token-btn { position: relative; background: #1a1c23; border: 2px solid #333849; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s; }
+.token-btn:hover { border-color: #ffcb05; transform: translateY(-2px); }
+.token-btn img { width: 38px; height: 38px; object-fit: contain; }
+.token-btn .token-count { font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: #fff; }
+.token-btn .select-badge { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+.token-btn.disabled { cursor: default; opacity: 0.8; }
+.action-btn { background: #ffcb05; color: #111; font-weight: bold; padding: 12px; border: none; border-radius: 8px; cursor: pointer; }
+.action-btn-secondary { background: #333849; color: #ccc; padding: 8px; border: none; border-radius: 6px; cursor: pointer; }
+
+/* 2. 중앙 마켓 진열대 */
+.market-section { 
+  flex: 1; 
+  background: #252836; 
+  border-radius: 12px; 
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: flex-start;
+  gap: 12px;
+  overflow-y: auto; 
+}
+.market-row-container { display: flex; align-items: center; gap: 12px; background: #1a1c23; padding: 8px 12px; border-radius: 8px; }
+.special-row-container { display: flex; gap: 40px; }
+.special-slot { display: flex; align-items: center; gap: 12px; }
+
+.row-label { width: 50px; font-weight: bold; font-size: 0.85rem; text-align: center; }
+.row-label.legendary { color: #a29bfe; }
+.row-label.rare { color: #ffeaa7; }
+.row-label.lvl3 { color: #ff7675; }
+.row-label.lvl2 { color: #74b9ff; }
+.row-label.lvl1 { color: #55efc4; }
+
+.card-row { display: flex; gap: 10px; flex: 1; }
+
+.card { width: 130px; height: 195px; background: #2f3446; border: 2px solid #444a5d; border-radius: 8px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; }
+.card.rare { border-color: #ffeaa7; }
+.card.legendary { border-color: #a29bfe; }
+
+.card-top { display: flex; justify-content: center; align-items: center; padding: 2px 0; }
+.card-name { font-size: 0.85rem; font-weight: bold; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.card-img-wrapper { 
+  flex: 1; 
+  width: 100%; 
+  background: #1a1c23; 
+  border-radius: 4px; 
+  overflow: hidden; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  margin: 4px 0; 
+}
+.card-img-wrapper img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: fill; 
+}
+
+.card-actions { display: flex; gap: 2px; }
+.card-actions button { flex: 1; font-size: 0.7rem; padding: 4px 0; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; background: #0984e3; }
+.card-actions button.btn-evo { background: #00b894; }
+.card-actions button.btn-keep { background: #6c5ce7; }
+
+/* 3. 우측 플레이어 보드 */
+.sidebar-players { width: 280px; background: #252836; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-shrink: 0; }
+.player-card { background: #1a1c23; border: 2px solid #333849; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.player-card.active-turn { border-color: #ffcb05; background: #212431; box-shadow: 0 0 10px rgba(255, 203, 5, 0.2); }
+
+.player-header { display: flex; align-items: center; gap: 8px; }
+.player-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #555; object-fit: cover; }
+.player-info-text { flex: 1; }
+.player-name-tag { font-weight: bold; font-size: 0.95rem; color: #fff; }
+.player-trainer-tag { font-size: 0.75rem; color: #a0a5b5; }
+.player-score { font-size: 1.1rem; font-weight: bold; color: #ffcb05; }
+
+.player-tokens-row { display: flex; gap: 4px; background: #252836; padding: 6px; border-radius: 6px; justify-content: space-around; }
+.player-token-item { display: flex; align-items: center; gap: 2px; font-size: 0.75rem; font-weight: bold; }
+.player-token-item img { width: 16px; height: 16px; }
+
+.player-cards-summary { font-size: 0.75rem; color: #b2bec3; word-break: break-all; }
+
+/* ====================================================
+   📱 모바일 전용 반응형 스타일 (768px 이하)
+   ==================================================== */
+@media (max-width: 768px) {
+  body { min-width: 100% !important; overflow-x: hidden; }
+  #game-container { height: auto !important; }
+
+  .dashboard-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    overflow-y: visible !important;
+    padding: 10px !important;
+    gap: 12px !important;
+  }
+
+  .sidebar-tokens, .sidebar-players { width: 100% !important; }
+  .token-grid { grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; }
+  .token-btn img { width: 28px !important; height: 28px !important; }
+  .token-btn .token-count { font-size: 0.8rem !important; }
+
+  .market-section { width: 100% !important; overflow-x: auto; }
+  .card-row { overflow-x: auto; padding-bottom: 6px; }
+  .special-row-container { flex-direction: column !important; gap: 10px !important; }
+
+  .card { width: 115px !important; height: 190px !important; flex-shrink: 0; }
+  .card-name { font-size: 0.75rem !important; }
+
+  .card-actions { flex-direction: column !important; gap: 3px !important; }
+  .card-actions button { width: 100% !important; padding: 5px 0 !important; font-size: 0.7rem !important; border-radius: 4px !important; }
+}

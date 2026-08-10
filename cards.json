@@ -1,0 +1,1657 @@
+{
+  "level1": [
+    {
+      "id": "c101",
+      "name": "케이시",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 3,
+        "quick": 2
+      },
+      "image": "/images/001.png"
+    },
+    {
+      "id": "c102",
+      "name": "케이시",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 4
+      },
+      "image": "/images/002.png"
+    },
+    {
+      "id": "c103",
+      "name": "모다피",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 2,
+        "super": 1
+      },
+      "image": "/images/003.png"
+    },
+    {
+      "id": "c104",
+      "name": "모다피",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 2,
+        "monster": 2
+      },
+      "image": "/images/004.png"
+    },
+    {
+      "id": "c105",
+      "name": "모다피",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 3
+      },
+      "image": "/images/005.png"
+    },
+    {
+      "id": "c106",
+      "name": "이상해씨",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 3,
+        "hyper": 2
+      },
+      "image": "/images/006.png"
+    },
+    {
+      "id": "c107",
+      "name": "이상해씨",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 4
+      },
+      "image": "/images/007.png"
+    },
+    {
+      "id": "c108",
+      "name": "캐터피",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 1,
+        "quick": 1,
+        "monster": 1,
+        "hyper": 1
+      },
+      "image": "/images/008.png"
+    },
+    {
+      "id": "c109",
+      "name": "캐터피",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 2,
+        "super": 1,
+        "quick": 1
+      },
+      "image": "/images/009.png"
+    },
+    {
+      "id": "c110",
+      "name": "파이리",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 3,
+        "heal": 2
+      },
+      "image": "/images/010.png"
+    },
+    {
+      "id": "c111",
+      "name": "파이리",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 4
+      },
+      "image": "/images/011.png"
+    },
+    {
+      "id": "c112",
+      "name": "미뇽",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 3,
+        "monster": 2
+      },
+      "image": "/images/012.png"
+    },
+    {
+      "id": "c113",
+      "name": "미뇽",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 4
+      },
+      "image": "/images/013.png"
+    },
+    {
+      "id": "c114",
+      "name": "고스트",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 1,
+        "monster": 1,
+        "heal": 1,
+        "hyper": 1
+      },
+      "image": "/images/014.png"
+    },
+    {
+      "id": "c115",
+      "name": "고스트",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 2,
+        "hyper": 1,
+        "monster": 1
+      },
+      "image": "/images/015.png"
+    },
+    {
+      "id": "c116",
+      "name": "꼬마돌",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 1,
+        "quick": 1,
+        "heal": 1,
+        "monster": 1
+      },
+      "image": "/images/016.png"
+    },
+    {
+      "id": "c117",
+      "name": "꼬마돌",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 2,
+        "quick": 1,
+        "super": 1
+      },
+      "image": "/images/017.png"
+    },
+    {
+      "id": "c118",
+      "name": "알통몬",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 1,
+        "quick": 1,
+        "heal": 1,
+        "hyper": 1
+      },
+      "image": "/images/018.png"
+    },
+    {
+      "id": "c119",
+      "name": "알통몬",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 2,
+        "heal": 1,
+        "hyper": 1
+      },
+      "image": "/images/019.png"
+    },
+    {
+      "id": "c120",
+      "name": "니드런",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 2,
+        "heal": 1
+      },
+      "image": "/images/020.png"
+    },
+    {
+      "id": "c121",
+      "name": "니드런",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 2,
+        "quick": 2
+      },
+      "image": "/images/021.png"
+    },
+    {
+      "id": "c122",
+      "name": "니드런",
+      "level": "1단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "hyper": 3
+      },
+      "image": "/images/022.png"
+    },
+    {
+      "id": "c123",
+      "name": "뚜벅초",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 2,
+        "monster": 1
+      },
+      "image": "/images/023.png"
+    },
+    {
+      "id": "c124",
+      "name": "뚜벅초",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 2,
+        "hyper": 2
+      },
+      "image": "/images/024.png"
+    },
+    {
+      "id": "c125",
+      "name": "뚜벅초",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 3
+      },
+      "image": "/images/025.png"
+    },
+    {
+      "id": "c126",
+      "name": "구구",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "quick": 2,
+        "hyper": 1
+      },
+      "image": "/images/026.png"
+    },
+    {
+      "id": "c127",
+      "name": "구구",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 2,
+        "monster": 2
+      },
+      "image": "/images/027.png"
+    },
+    {
+      "id": "c128",
+      "name": "구구",
+      "level": "1단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 3
+      },
+      "image": "/images/028.png"
+    },
+    {
+      "id": "c129",
+      "name": "발챙이",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 2,
+        "quick": 1
+      },
+      "image": "/images/029.png"
+    },
+    {
+      "id": "c130",
+      "name": "발챙이",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 2,
+        "hyper": 2
+      },
+      "image": "/images/030.png"
+    },
+    {
+      "id": "c131",
+      "name": "발챙이",
+      "level": "1단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 3
+      },
+      "image": "/images/031.png"
+    },
+    {
+      "id": "c132",
+      "name": "꼬부기",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "heal": 3,
+        "super": 2
+      },
+      "image": "/images/032.png"
+    },
+    {
+      "id": "c133",
+      "name": "꼬부기",
+      "level": "1단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 4
+      },
+      "image": "/images/033.png"
+    },
+    {
+      "id": "c134",
+      "name": "뿔충이",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "monster": 1,
+        "quick": 1,
+        "heal": 1,
+        "super": 1
+      },
+      "image": "/images/034.png"
+    },
+    {
+      "id": "c135",
+      "name": "뿔충이",
+      "level": "1단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "super": 2,
+        "monster": 1,
+        "heal": 1
+      },
+      "image": "/images/035.png"
+    }
+  ],
+  "level2": [
+    {
+      "id": "c201",
+      "name": "리자드",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "파이리",
+      "evoCost": {
+        "quick": 3
+      },
+      "cost": {
+        "quick": 4,
+        "hyper": 4,
+        "monster": 1
+      },
+      "image": "/images/036.png"
+    },
+    {
+      "id": "c202",
+      "name": "리자드",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "파이리",
+      "evoCost": {
+        "quick": 3
+      },
+      "cost": {
+        "super": 6
+      },
+      "image": "/images/037.png"
+    },
+    {
+      "id": "c203",
+      "name": "신뇽",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "미뇽",
+      "evoCost": {
+        "super": 3
+      },
+      "cost": {
+        "super": 4,
+        "heal": 4,
+        "quick": 1
+      },
+      "image": "/images/038.png"
+    },
+    {
+      "id": "c204",
+      "name": "신뇽",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "미뇽",
+      "evoCost": {
+        "super": 3
+      },
+      "cost": {
+        "hyper": 6
+      },
+      "image": "/images/039.png"
+    },
+    {
+      "id": "c205",
+      "name": "냄새꼬",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "뚜벅초",
+      "evoCost": {
+        "quick": 2
+      },
+      "cost": {
+        "quick": 3,
+        "super": 2,
+        "monster": 2
+      },
+      "image": "/images/040.png"
+    },
+    {
+      "id": "c206",
+      "name": "냄새꼬",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "뚜벅초",
+      "evoCost": {
+        "quick": 2
+      },
+      "cost": {
+        "hyper": 3,
+        "super": 2,
+        "monster": 2
+      },
+      "image": "/images/041.png"
+    },
+    {
+      "id": "c207",
+      "name": "데구리",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "꼬마돌",
+      "evoCost": {
+        "heal": 3
+      },
+      "cost": {
+        "heal": 4,
+        "quick": 2,
+        "hyper": 1
+      },
+      "image": "/images/042.png"
+    },
+    {
+      "id": "c208",
+      "name": "데구리",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "꼬마돌",
+      "evoCost": {
+        "heal": 3
+      },
+      "cost": {
+        "super": 5,
+        "monster": 2
+      },
+      "image": "/images/043.png"
+    },
+    {
+      "id": "c209",
+      "name": "고우스트",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "고스트",
+      "evoCost": {
+        "hyper": 3
+      },
+      "cost": {
+        "hyper": 4,
+        "heal": 2,
+        "monster": 1
+      },
+      "image": "/images/044.png"
+    },
+    {
+      "id": "c210",
+      "name": "고우스트",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "고스트",
+      "evoCost": {
+        "hyper": 3
+      },
+      "cost": {
+        "quick": 5,
+        "super": 2
+      },
+      "image": "/images/045.png"
+    },
+    {
+      "id": "c211",
+      "name": "이상해풀",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "이상해씨",
+      "evoCost": {
+        "heal": 3
+      },
+      "cost": {
+        "monster": 4,
+        "heal": 4,
+        "super": 1
+      },
+      "image": "/images/046.png"
+    },
+    {
+      "id": "c212",
+      "name": "이상해풀",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "이상해씨",
+      "evoCost": {
+        "heal": 3
+      },
+      "cost": {
+        "quick": 6
+      },
+      "image": "/images/047.png"
+    },
+    {
+      "id": "c213",
+      "name": "윤겔라",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "케이시",
+      "evoCost": {
+        "monster": 3
+      },
+      "cost": {
+        "monster": 4,
+        "quick": 4,
+        "hyper": 1
+      },
+      "image": "/images/048.png"
+    },
+    {
+      "id": "c214",
+      "name": "윤겔라",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "케이시",
+      "evoCost": {
+        "monster": 3
+      },
+      "cost": {
+        "heal": 6
+      },
+      "image": "/images/049.png"
+    },
+    {
+      "id": "c215",
+      "name": "딱충이",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "뿔충이",
+      "evoCost": {
+        "monster": 3
+      },
+      "cost": {
+        "monster": 4,
+        "super": 2,
+        "heal": 1
+      },
+      "image": "/images/050.png"
+    },
+    {
+      "id": "c216",
+      "name": "딱충이",
+      "level": "2단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "뿔충이",
+      "evoCost": {
+        "monster": 3
+      },
+      "cost": {
+        "hyper": 5,
+        "quick": 2
+      },
+      "image": "/images/051.png"
+    },
+    {
+      "id": "c217",
+      "name": "근육몬",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "알통몬",
+      "evoCost": {
+        "quick": 3
+      },
+      "cost": {
+        "quick": 4,
+        "hyper": 2,
+        "super": 1
+      },
+      "image": "/images/052.png"
+    },
+    {
+      "id": "c218",
+      "name": "근육몬",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "알통몬",
+      "evoCost": {
+        "quick": 3
+      },
+      "cost": {
+        "monster": 5,
+        "heal": 2
+      },
+      "image": "/images/053.png"
+    },
+    {
+      "id": "c219",
+      "name": "단데기",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "캐터피",
+      "evoCost": {
+        "super": 3
+      },
+      "cost": {
+        "super": 4,
+        "monster": 2,
+        "quick": 1
+      },
+      "image": "/images/054.png"
+    },
+    {
+      "id": "c220",
+      "name": "단데기",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 2,
+      "evolutionFrom": "캐터피",
+      "evoCost": {
+        "super": 3
+      },
+      "cost": {
+        "heal": 5,
+        "hyper": 2
+      },
+      "image": "/images/055.png"
+    },
+    {
+      "id": "c221",
+      "name": "니드리나",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "니드런",
+      "evoCost": {
+        "super": 2
+      },
+      "cost": {
+        "super": 3,
+        "heal": 2,
+        "hyper": 2
+      },
+      "image": "/images/056.png"
+    },
+    {
+      "id": "c222",
+      "name": "니드리나",
+      "level": "2단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "니드런",
+      "evoCost": {
+        "super": 2
+      },
+      "cost": {
+        "quick": 3,
+        "heal": 2,
+        "monster": 2
+      },
+      "image": "/images/057.png"
+    },
+    {
+      "id": "c223",
+      "name": "피죤",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "구구",
+      "evoCost": {
+        "monster": 2
+      },
+      "cost": {
+        "monster": 3,
+        "quick": 2,
+        "heal": 2
+      },
+      "image": "/images/058.png"
+    },
+    {
+      "id": "c224",
+      "name": "피죤",
+      "level": "2단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "구구",
+      "evoCost": {
+        "monster": 2
+      },
+      "cost": {
+        "super": 3,
+        "heal": 2,
+        "hyper": 2
+      },
+      "image": "/images/059.png"
+    },
+    {
+      "id": "c225",
+      "name": "수륙챙이",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "발챙이",
+      "evoCost": {
+        "hyper": 2
+      },
+      "cost": {
+        "hyper": 3,
+        "super": 2,
+        "monster": 2
+      },
+      "image": "/images/060.png"
+    },
+    {
+      "id": "c226",
+      "name": "수륙챙이",
+      "level": "2단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "발챙이",
+      "evoCost": {
+        "hyper": 2
+      },
+      "cost": {
+        "heal": 3,
+        "super": 2,
+        "quick": 2
+      },
+      "image": "/images/061.png"
+    },
+    {
+      "id": "c227",
+      "name": "어니부기",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "꼬부기",
+      "evoCost": {
+        "hyper": 3
+      },
+      "cost": {
+        "super": 4,
+        "hyper": 4,
+        "heal": 1
+      },
+      "image": "/images/062.png"
+    },
+    {
+      "id": "c228",
+      "name": "어니부기",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "꼬부기",
+      "evoCost": {
+        "hyper": 3
+      },
+      "cost": {
+        "monster": 6
+      },
+      "image": "/images/063.png"
+    },
+    {
+      "id": "c229",
+      "name": "우츠동",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "모다피",
+      "evoCost": {
+        "heal": 2
+      },
+      "cost": {
+        "heal": 3,
+        "quick": 2,
+        "hyper": 2
+      },
+      "image": "/images/064.png"
+    },
+    {
+      "id": "c230",
+      "name": "우츠동",
+      "level": "2단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 1,
+      "evolutionFrom": "모다피",
+      "evoCost": {
+        "heal": 2
+      },
+      "cost": {
+        "monster": 3,
+        "hyper": 2,
+        "quick": 2
+      },
+      "image": "/images/065.png"
+    }
+  ],
+  "level3": [
+    {
+      "id": "c301",
+      "name": "후딘",
+      "level": "3단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 5,
+      "evolutionFrom": "윤겔라",
+      "evoCost": {
+        "hyper": 4
+      },
+      "cost": {
+        "quick": 7,
+        "monster": 3
+      },
+      "image": "/images/066.png"
+    },
+    {
+      "id": "c302",
+      "name": "독침붕",
+      "level": "3단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 4,
+      "evolutionFrom": "딱충이",
+      "evoCost": {
+        "heal": 3
+      },
+      "cost": {
+        "monster": 6,
+        "quick": 4
+      },
+      "image": "/images/067.png"
+    },
+    {
+      "id": "c303",
+      "name": "거북왕",
+      "level": "3단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 5,
+      "evolutionFrom": "어니부기",
+      "evoCost": {
+        "heal": 4
+      },
+      "cost": {
+        "super": 7,
+        "hyper": 3
+      },
+      "image": "/images/068.png"
+    },
+    {
+      "id": "c304",
+      "name": "버터플",
+      "level": "3단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 4,
+      "evolutionFrom": "단데기",
+      "evoCost": {
+        "quick": 3
+      },
+      "cost": {
+        "super": 6,
+        "hyper": 4
+      },
+      "image": "/images/069.png"
+    },
+    {
+      "id": "c305",
+      "name": "리자몽",
+      "level": "3단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 5,
+      "evolutionFrom": "리자드",
+      "evoCost": {
+        "monster": 4
+      },
+      "cost": {
+        "hyper": 7,
+        "quick": 3
+      },
+      "image": "/images/070.png"
+    },
+    {
+      "id": "c306",
+      "name": "망나뇽",
+      "level": "3단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 5,
+      "evolutionFrom": "신뇽",
+      "evoCost": {
+        "quick": 4
+      },
+      "cost": {
+        "heal": 7,
+        "super": 3
+      },
+      "image": "/images/071.png"
+    },
+    {
+      "id": "c307",
+      "name": "팬텀",
+      "level": "3단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 4,
+      "evolutionFrom": "고우스트",
+      "evoCost": {
+        "monster": 3
+      },
+      "cost": {
+        "hyper": 6,
+        "super": 4
+      },
+      "image": "/images/072.png"
+    },
+    {
+      "id": "c308",
+      "name": "딱구리",
+      "level": "3단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 4,
+      "evolutionFrom": "데구리",
+      "evoCost": {
+        "hyper": 3
+      },
+      "cost": {
+        "heal": 6,
+        "monster": 4
+      },
+      "image": "/images/073.png"
+    },
+    {
+      "id": "c309",
+      "name": "괴력몬",
+      "level": "3단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 4,
+      "evolutionFrom": "근육몬",
+      "evoCost": {
+        "super": 3
+      },
+      "cost": {
+        "quick": 6,
+        "heal": 4
+      },
+      "image": "/images/074.png"
+    },
+    {
+      "id": "c310",
+      "name": "니드퀸",
+      "level": "3단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "니드리나",
+      "evoCost": {
+        "super": 4
+      },
+      "cost": {
+        "quick": 5,
+        "monster": 2,
+        "heal": 2
+      },
+      "image": "/images/075.png"
+    },
+    {
+      "id": "c311",
+      "name": "피죤투",
+      "level": "3단계",
+      "energy": "super",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "피죤",
+      "evoCost": {
+        "monster": 4
+      },
+      "cost": {
+        "super": 5,
+        "hyper": 2,
+        "quick": 2
+      },
+      "image": "/images/076.png"
+    },
+    {
+      "id": "c312",
+      "name": "강챙이",
+      "level": "3단계",
+      "energy": "heal",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "수륙챙이",
+      "evoCost": {
+        "hyper": 4
+      },
+      "cost": {
+        "heal": 5,
+        "quick": 2,
+        "monster": 2
+      },
+      "image": "/images/077.png"
+    },
+    {
+      "id": "c313",
+      "name": "이상해꽃",
+      "level": "3단계",
+      "energy": "quick",
+      "energyCount": 1,
+      "points": 5,
+      "evolutionFrom": "이상해풀",
+      "evoCost": {
+        "super": 4
+      },
+      "cost": {
+        "monster": 7,
+        "heal": 3
+      },
+      "image": "/images/078.png"
+    },
+    {
+      "id": "c314",
+      "name": "우츠보트",
+      "level": "3단계",
+      "energy": "monster",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "우츠동",
+      "evoCost": {
+        "heal": 4
+      },
+      "cost": {
+        "monster": 5,
+        "hyper": 2,
+        "super": 2
+      },
+      "image": "/images/079.png"
+    },
+    {
+      "id": "c315",
+      "name": "라플레시아",
+      "level": "3단계",
+      "energy": "hyper",
+      "energyCount": 1,
+      "points": 3,
+      "evolutionFrom": "냄새꼬",
+      "evoCost": {
+        "quick": 4
+      },
+      "cost": {
+        "hyper": 5,
+        "super": 2,
+        "heal": 2
+      },
+      "image": "/images/080.png"
+    }
+  ],
+  "rare": [
+    {
+      "id": "r101",
+      "name": "프테라",
+      "level": "희귀",
+      "energy": "quick",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "super": 3,
+        "heal": 2
+      },
+      "image": "/images/081.png"
+    },
+    {
+      "id": "r102",
+      "name": "메타몽",
+      "level": "희귀",
+      "energy": "super",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "quick": 2
+      },
+      "image": "/images/082.png"
+    },
+    {
+      "id": "r103",
+      "name": "이브이",
+      "level": "희귀",
+      "energy": "hyper",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "quick": 3,
+        "monster": 2
+      },
+      "image": "/images/083.png"
+    },
+    {
+      "id": "r104",
+      "name": "라프라스",
+      "level": "희귀",
+      "energy": "monster",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "hyper": 3,
+        "super": 2
+      },
+      "image": "/images/084.png"
+    },
+    {
+      "id": "r105",
+      "name": "로켓단 나옹",
+      "level": "희귀",
+      "energy": "monster",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "hyper": 3,
+        "super": 2
+      },
+      "image": "/images/085.png"
+    },
+    {
+      "id": "r106",
+      "name": "웅이의 롱스톤",
+      "level": "희귀",
+      "energy": "hyper",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "quick": 3,
+        "monster": 2
+      },
+      "image": "/images/086.png"
+    },
+    {
+      "id": "r107",
+      "name": "지우의 피카츄",
+      "level": "희귀",
+      "energy": "quick",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "super": 3,
+        "heal": 2
+      },
+      "image": "/images/087.png"
+    },
+    {
+      "id": "r108",
+      "name": "이슬이의 고라파덕",
+      "level": "희귀",
+      "energy": "heal",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "monster": 3,
+        "hyper": 2
+      },
+      "image": "/images/088.png"
+    },
+    {
+      "id": "r109",
+      "name": "잠만보",
+      "level": "희귀",
+      "energy": "heal",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "monster": 3,
+        "hyper": 2
+      },
+      "image": "/images/089.png"
+    },
+    {
+      "id": "r110",
+      "name": "로켓단 마자용",
+      "level": "희귀",
+      "energy": "super",
+      "energyCount": 2,
+      "points": 0,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "quick": 2
+      },
+      "image": "/images/090.png"
+    }
+  ],
+  "legendary": [
+    {
+      "id": "l101",
+      "name": "디안시",
+      "level": "전설",
+      "energy": "heal",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "super": 3,
+        "quick": 3,
+        "hyper": 3
+      },
+      "image": "/images/091.png"
+    },
+    {
+      "id": "l102",
+      "name": "프리저",
+      "level": "전설",
+      "energy": "quick",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "monster": 3,
+        "heal": 3,
+        "hyper": 3
+      },
+      "image": "/images/092.png"
+    },
+    {
+      "id": "l103",
+      "name": "케르디오",
+      "level": "전설",
+      "energy": "super",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "hyper": 3,
+        "quick": 3,
+        "monster": 3
+      },
+      "image": "/images/093.png"
+    },
+    {
+      "id": "l104",
+      "name": "메로에타",
+      "level": "전설",
+      "energy": "hyper",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "monster": 3,
+        "super": 3
+      },
+      "image": "/images/094.png"
+    },
+    {
+      "id": "l105",
+      "name": "뮤",
+      "level": "전설",
+      "energy": "super",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "hyper": 3,
+        "quick": 3,
+        "monster": 3
+      },
+      "image": "/images/095.png"
+    },
+    {
+      "id": "l106",
+      "name": "뮤츠",
+      "level": "전설",
+      "energy": "hyper",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "monster": 3,
+        "super": 3
+      },
+      "image": "/images/096.png"
+    },
+    {
+      "id": "l107",
+      "name": "파이어",
+      "level": "전설",
+      "energy": "heal",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "super": 3,
+        "quick": 3,
+        "hyper": 3
+      },
+      "image": "/images/097.png"
+    },
+    {
+      "id": "l108",
+      "name": "비크티니",
+      "level": "전설",
+      "energy": "monster",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "super": 3,
+        "quick": 3
+      },
+      "image": "/images/098.png"
+    },
+    {
+      "id": "l109",
+      "name": "썬더",
+      "level": "전설",
+      "energy": "monster",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "heal": 3,
+        "super": 3,
+        "quick": 3
+      },
+      "image": "/images/099.png"
+    },
+    {
+      "id": "l110",
+      "name": "제라오라",
+      "level": "전설",
+      "energy": "quick",
+      "energyCount": 2,
+      "points": 2,
+      "evolutionFrom": null,
+      "evoCost": null,
+      "cost": {
+        "master": 1,
+        "monster": 3,
+        "heal": 3,
+        "hyper": 3
+      },
+      "image": "/images/100.png"
+    }
+  ]
+}
