@@ -37,6 +37,9 @@ let gameState = {
   logs: []
 };
 
+// 재접속 타이머 관리 객체
+const disconnectTimers = {};
+
 function addLog(msg) {
   const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   gameState.logs.unshift({ time, msg });
@@ -115,10 +118,18 @@ function refillMarket(lvl, cardIdx) {
 }
 
 function nextTurn() {
-  gameState.currentTurn = (gameState.currentTurn + 1) % gameState.players.length;
+  if (gameState.players.length === 0) return;
+  
+  // 끊기지 않은 유효한 플레이어가 있는지 확인
+  let attempts = 0;
+  do {
+    gameState.currentTurn = (gameState.currentTurn + 1) % gameState.players.length;
+    attempts++;
+  } while (gameState.players[gameState.currentTurn].isDisconnected && attempts < gameState.players.length);
+
   gameState.turnActions = { mainActionDone: false, evolvedDone: false };
   const currentP = gameState.players[gameState.currentTurn];
-  if (currentP) {
+  if (currentP && !currentP.isDisconnected) {
     addLog(`🔄 ${currentP.name}님의 턴이 시작되었습니다.`);
   }
 }
@@ -126,7 +137,25 @@ function nextTurn() {
 io.on('connection', (socket) => {
   socket.emit('init', { socketId: socket.id, gameState });
 
-  socket.on('joinRoom', (playerName) => {
+  // 💡 방 참가 또는 재접속(Rejoin)
+  socket.on('joinRoom', ({ name, persistentId }) => {
+    const existingPlayer = gameState.players.find(p => p.persistentId === persistentId);
+
+    if (existingPlayer) {
+      // 재접속 처리
+      existingPlayer.id = socket.id;
+      existingPlayer.isDisconnected = false;
+
+      if (disconnectTimers[persistentId]) {
+        clearTimeout(disconnectTimers[persistentId]);
+        delete disconnectTimers[persistentId];
+      }
+
+      addLog(`🔌 ${existingPlayer.name}님이 게임에 다시 연결되었습니다.`);
+      io.emit('updateGameState', gameState);
+      return;
+    }
+
     if (gameState.started) return socket.emit('errorMsg', '이미 게임이 시작되었습니다.');
     if (gameState.players.length >= 4) return socket.emit('errorMsg', '방이 가득 찼습니다.');
 
@@ -134,12 +163,14 @@ io.on('connection', (socket) => {
 
     gameState.players.push({
       id: socket.id,
-      name: playerName || `플레이어 ${gameState.players.length + 1}`,
+      persistentId: persistentId,
+      name: name || `플레이어 ${gameState.players.length + 1}`,
       character: assignedTrainer,
       tokens: { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0, master: 0 },
       cards: [],
       reserved: [],
-      points: 0
+      points: 0,
+      isDisconnected: false
     });
 
     io.emit('updateGameState', gameState);
@@ -156,7 +187,7 @@ io.on('connection', (socket) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
     if (gameState.turnActions.mainActionDone) {
-      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
+      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
     }
 
     const posDeltas = {};
@@ -177,62 +208,38 @@ io.on('connection', (socket) => {
           hasSameTwo = true;
           sameTwoColor = color;
         }
-        if (delta > 2) {
-          return socket.emit('errorMsg', '한 종류의 토큰은 최대 2개까지만 가져올 수 있습니다.');
-        }
+        if (delta > 2) return socket.emit('errorMsg', '한 종류의 토큰은 최대 2개까지만 가져올 수 있습니다.');
       } else if (delta < 0) {
-        if (color === 'master') {
-          return socket.emit('errorMsg', '마스터볼 토큰은 반납/교환할 수 없습니다.');
-        }
-        if (player.tokens[color] < Math.abs(delta)) {
-          return socket.emit('errorMsg', `${BALL_NAMES_KR[color]} 토큰이 부족하여 반납할 수 없습니다.`);
-        }
+        if (color === 'master') return socket.emit('errorMsg', '마스터볼 토큰은 반납/교환할 수 없습니다.');
+        if (player.tokens[color] < Math.abs(delta)) return socket.emit('errorMsg', `${BALL_NAMES_KR[color]} 토큰이 부족합니다.`);
         totalNeg += delta;
         negStrArr.push(`${BALL_NAMES_KR[color]} x${Math.abs(delta)}`);
       }
     }
 
     const negAbs = Math.abs(totalNeg);
-
-    if (negAbs > totalPos) {
-      return socket.emit('errorMsg', '반납(-)하는 토큰 수는 가져올(+) 토큰 수를 초과할 수 없습니다.');
-    }
+    if (negAbs > totalPos) return socket.emit('errorMsg', '반납(-)하는 토큰 수는 가져올(+) 토큰 수를 초과할 수 없습니다.');
 
     if (totalPos > 0) {
       if (hasSameTwo) {
-        if (Object.keys(posDeltas).length > 1 || totalPos !== 2) {
-          return socket.emit('errorMsg', '동일한 토큰 2개를 가져올 때는 다른 토큰을 함께 가져올 수 없습니다.');
-        }
-        if (gameState.tokens[sameTwoColor] < 4) {
-          return socket.emit('errorMsg', '은행에 해당 토큰이 4개 이상 있을 때만 2개를 가져올 수 있습니다.');
-        }
+        if (Object.keys(posDeltas).length > 1 || totalPos !== 2) return socket.emit('errorMsg', '동일한 토큰 2개를 가져올 때는 다른 토큰을 함께 가져올 수 없습니다.');
+        if (gameState.tokens[sameTwoColor] < 4) return socket.emit('errorMsg', '은행에 해당 토큰이 4개 이상 있을 때만 2개를 가져올 수 있습니다.');
       } else {
-        if (totalPos > 3) {
-          return socket.emit('errorMsg', '가져오는 토큰의 총 개수는 최대 3개까지만 가능합니다.');
-        }
+        if (totalPos > 3) return socket.emit('errorMsg', '가져오는 토큰의 총 개수는 최대 3개까지만 가능합니다.');
       }
-    } else {
-      if (negAbs === 0) {
-        return socket.emit('errorMsg', '가져올 토큰이나 반납할 토큰을 선택해 주세요.');
-      }
+    } else if (negAbs === 0) {
+      return socket.emit('errorMsg', '가져올 토큰이나 반납할 토큰을 선택해 주세요.');
     }
 
     let currentTotal = Object.values(player.tokens).reduce((a, b) => a + b, 0);
     let netChange = totalPos + totalNeg;
 
     for (const [color, delta] of Object.entries(selectedDeltas)) {
-      if (delta > 0 && gameState.tokens[color] < delta) {
-        return socket.emit('errorMsg', `은행에 ${BALL_NAMES_KR[color]} 토큰 수량이 부족합니다.`);
-      }
+      if (delta > 0 && gameState.tokens[color] < delta) return socket.emit('errorMsg', `은행에 ${BALL_NAMES_KR[color]} 토큰 수량이 부족합니다.`);
     }
 
-    if (currentTotal + netChange > 10) {
-      return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다. 가져올(+) 수량만큼 필요없는 토큰을 반납(-)하여 10개 이하로 맞춰주세요.');
-    }
-
-    if (currentTotal === 10 && totalPos > 0 && totalPos !== negAbs) {
-      return socket.emit('errorMsg', '토큰 10개 보유 중 교환 시 가져올(+) 수량과 반납할(-) 수량이 동일해야 합니다. (+와 -의 합 = 0)');
-    }
+    if (currentTotal + netChange > 10) return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다.');
+    if (currentTotal === 10 && totalPos > 0 && totalPos !== negAbs) return socket.emit('errorMsg', '토큰 10개 보유 중 교환 시 가져올(+) 수량과 반납할(-) 수량이 동일해야 합니다.');
 
     Object.keys(selectedDeltas).forEach(color => {
       const delta = selectedDeltas[color];
@@ -256,13 +263,9 @@ io.on('connection', (socket) => {
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
 
     if (isEvolution) {
-      if (gameState.turnActions.evolvedDone) {
-        return socket.emit('errorMsg', '진화는 한 턴에 한 번만 가능합니다.');
-      }
-    } else {
-      if (gameState.turnActions.mainActionDone) {
-        return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
-      }
+      if (gameState.turnActions.evolvedDone) return socket.emit('errorMsg', '진화는 한 턴에 한 번만 가능합니다.');
+    } else if (gameState.turnActions.mainActionDone) {
+      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
     }
 
     let targetCard = null;
@@ -287,9 +290,7 @@ io.on('connection', (socket) => {
 
     if (isEvolution) {
       const basePokemonIdx = player.cards.findIndex(c => c.name === targetCard.evolutionFrom);
-      if (basePokemonIdx === -1) {
-        return socket.emit('errorMsg', `'${targetCard.evolutionFrom}' 포켓몬을 먼저 보유하고 있어야 합니다.`);
-      }
+      if (basePokemonIdx === -1) return socket.emit('errorMsg', `'${targetCard.evolutionFrom}' 포켓몬을 먼저 보유하고 있어야 합니다.`);
 
       let canEvolve = true;
       for (const [ballType, reqAmount] of Object.entries(targetCard.evoCost)) {
@@ -298,10 +299,7 @@ io.on('connection', (socket) => {
           break;
         }
       }
-
-      if (!canEvolve) {
-        return socket.emit('errorMsg', '진화에 필요한 카드 에너지 보너스가 부족합니다.');
-      }
+      if (!canEvolve) return socket.emit('errorMsg', '진화에 필요한 카드 에너지 보너스가 부족합니다.');
 
       player.cards.splice(basePokemonIdx, 1, targetCard);
       gameState.turnActions.evolvedDone = true;
@@ -322,9 +320,7 @@ io.on('connection', (socket) => {
         }
       });
 
-      if (player.tokens.master < neededMaster) {
-        return socket.emit('errorMsg', '토큰(자원)이 부족합니다.');
-      }
+      if (player.tokens.master < neededMaster) return socket.emit('errorMsg', '토큰(자원)이 부족합니다.');
 
       Object.keys(reqCost).forEach(type => {
         if (type !== 'master') {
@@ -360,17 +356,11 @@ io.on('connection', (socket) => {
     io.emit('updateGameState', gameState);
   });
 
-  // 공개 마켓 카드 킵하기
   socket.on('reserveCard', (cardId) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-    if (gameState.turnActions.mainActionDone) {
-      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
-    }
-
-    if (player.reserved && player.reserved.length >= 3) {
-      return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
-    }
+    if (gameState.turnActions.mainActionDone) return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
+    if (player.reserved && player.reserved.length >= 3) return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
 
     let targetCard = null;
     let targetLvl = null;
@@ -384,10 +374,7 @@ io.on('connection', (socket) => {
     });
 
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
-
-    if (targetLvl === 'rare' || targetLvl === 'legendary') {
-      return socket.emit('errorMsg', '전설 및 희귀 카드는 킵(보관)할 수 없습니다.');
-    }
+    if (targetLvl === 'rare' || targetLvl === 'legendary') return socket.emit('errorMsg', '전설 및 희귀 카드는 킵할 수 없습니다.');
 
     player.reserved.push(targetCard);
     let gotMaster = false;
@@ -398,30 +385,19 @@ io.on('connection', (socket) => {
     }
 
     refillMarket(targetLvl, gameState.market[targetLvl].findIndex(c => c.id === cardId));
-
     gameState.turnActions.mainActionDone = true;
     addLog(`🔒 ${player.name}님이 [${targetCard.name}] 카드를 킵했습니다.${gotMaster ? ' (마스터볼 +1)' : ''}`);
 
     io.emit('updateGameState', gameState);
   });
 
-  // 💡 덱 맨 위에서 바로 킵하기
   socket.on('reserveFromDeck', (lvl) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-    if (gameState.turnActions.mainActionDone) {
-      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
-    }
+    if (gameState.turnActions.mainActionDone) return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
+    if (player.reserved && player.reserved.length >= 3) return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
+    if (!gameState.decks[lvl] || gameState.decks[lvl].length === 0) return socket.emit('errorMsg', '해당 덱에 남은 카드가 없습니다.');
 
-    if (player.reserved && player.reserved.length >= 3) {
-      return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
-    }
-
-    if (!gameState.decks[lvl] || gameState.decks[lvl].length === 0) {
-      return socket.emit('errorMsg', '해당 덱에 남은 카드가 없습니다.');
-    }
-
-    // 덱 맨 위에서 1장 뽑기 (비공개)
     const targetCard = gameState.decks[lvl].shift();
     player.reserved.push(targetCard);
 
@@ -441,23 +417,14 @@ io.on('connection', (socket) => {
   socket.on('discardToken', (color) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-
-    if (color === 'master') {
-      return socket.emit('errorMsg', '마스터볼 토큰은 버릴 수 없습니다.');
-    }
+    if (color === 'master') return socket.emit('errorMsg', '마스터볼 토큰은 버릴 수 없습니다.');
 
     const totalTokens = Object.values(player.tokens).reduce((a, b) => a + b, 0);
-    if (totalTokens <= 10) {
-      return socket.emit('errorMsg', '토큰 수량이 10개 이하이므로 버릴 필요가 없습니다.');
-    }
-
-    if (!player.tokens[color] || player.tokens[color] <= 0) {
-      return socket.emit('errorMsg', '버릴 토큰이 없습니다.');
-    }
+    if (totalTokens <= 10) return socket.emit('errorMsg', '토큰 수량이 10개 이하이므로 버릴 필요가 없습니다.');
+    if (!player.tokens[color] || player.tokens[color] <= 0) return socket.emit('errorMsg', '버릴 토큰이 없습니다.');
 
     player.tokens[color] -= 1;
     gameState.tokens[color] += 1;
-
     addLog(`🗑️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰 1개를 버렸습니다.`);
 
     io.emit('updateGameState', gameState);
@@ -468,18 +435,38 @@ io.on('connection', (socket) => {
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
 
     const totalTokens = Object.values(player.tokens).reduce((a, b) => a + b, 0);
-    if (totalTokens > 10) {
-      return socket.emit('errorMsg', `보유 토큰이 10개를 초과했습니다 (${totalTokens}/10). 일반 볼 토큰을 선택하여 10개 이하로 맞춰주세요.`);
-    }
+    if (totalTokens > 10) return socket.emit('errorMsg', `보유 토큰이 10개를 초과했습니다 (${totalTokens}/10).`);
 
     nextTurn();
     io.emit('updateGameState', gameState);
   });
 
+  // 💡 일시적 재접속 대기 (Disconnect Timeout - 5분 유예)
   socket.on('disconnect', () => {
-    gameState.players = gameState.players.filter(p => p.id !== socket.id);
-    if (gameState.players.length === 0) gameState.started = false;
+    const player = gameState.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    player.isDisconnected = true;
+    addLog(`⚠️ ${player.name}님의 연결이 끊겼습니다. (5분 재접속 대기)`);
+
+    // 끊긴 플레이어가 현재 턴이었다면 다음 플레이어에게 턴 스킵
+    if (gameState.started && gameState.players[gameState.currentTurn].id === player.id) {
+      nextTurn();
+    }
+
     io.emit('updateGameState', gameState);
+
+    // 5분 동안 재접속하지 않으면 완전 삭제
+    disconnectTimers[player.persistentId] = setTimeout(() => {
+      const pIdx = gameState.players.findIndex(p => p.persistentId === player.persistentId);
+      if (pIdx !== -1) {
+        addLog(`❌ ${gameState.players[pIdx].name}님이 제한 시간을 초과하여 퇴장 처리되었습니다.`);
+        gameState.players.splice(pIdx, 1);
+        if (gameState.players.length === 0) gameState.started = false;
+        io.emit('updateGameState', gameState);
+      }
+      delete disconnectTimers[player.persistentId];
+    }, 300000); // 300초 (300,000ms)
   });
 });
 

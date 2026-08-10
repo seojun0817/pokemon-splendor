@@ -2,9 +2,15 @@ const socket = io();
 let mySocketId = null;
 let currentGameState = null;
 
+// 💡 LocalStorage를 통한 고유 세션 식별자 관리
+let persistentId = localStorage.getItem('splendor_player_id');
+if (!persistentId) {
+  persistentId = 'user_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('splendor_player_id', persistentId);
+}
+
 let selectedDeltas = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
-// 💡 각 단계별 덱 카드 커버 이미지 매핑
 const DECK_IMAGES = {
   level1: '/images/101.png',
   level2: '/images/102.png',
@@ -14,6 +20,14 @@ const DECK_IMAGES = {
 socket.on('init', (data) => {
   mySocketId = data.socketId;
   currentGameState = data.gameState;
+  
+  // 💡 이미 접속 이력이 있는 사용자 자동 재접속 시도
+  const savedName = localStorage.getItem('splendor_player_name');
+  if (savedName) {
+    document.getElementById('playerName').value = savedName;
+    socket.emit('joinRoom', { name: savedName, persistentId });
+  }
+  
   render();
 });
 
@@ -28,8 +42,12 @@ socket.on('gameOver', (data) => {
 });
 
 document.getElementById('btnJoin').addEventListener('click', () => {
-  const name = document.getElementById('playerName').value;
-  socket.emit('joinRoom', name);
+  const name = document.getElementById('playerName').value.trim();
+  if (!name) return alert('이름을 입력해주세요.');
+  
+  localStorage.setItem('splendor_player_name', name);
+  socket.emit('joinRoom', { name, persistentId });
+  
   document.getElementById('playerName').disabled = true;
   document.getElementById('btnJoin').disabled = true;
 });
@@ -38,7 +56,7 @@ document.getElementById('btnStart').addEventListener('click', () => socket.emit(
 
 function adjustToken(color, change) {
   const currentDelta = selectedDeltas[color];
-  const myPlayer = currentGameState ? currentGameState.players.find(p => p.id === mySocketId) : null;
+  const myPlayer = currentGameState ? currentGameState.players.find(p => p.persistentId === persistentId) : null;
   const bankCount = currentGameState ? (currentGameState.tokens[color] || 0) : 0;
   const myTokenCount = myPlayer ? (myPlayer.tokens[color] || 0) : 0;
 
@@ -54,34 +72,18 @@ function adjustToken(color, change) {
       .some(([c, d]) => c !== color && d === 2);
 
     if (currentDelta === 0) {
-      if (hasOtherSameTwo) {
-        alert('동일한 토큰 2개를 가져올 때는 다른 토큰을 추가할 수 없습니다.');
-        return;
-      }
-      if (otherPosSum >= 3) {
-        alert('토큰은 한 턴에 최대 3개까지만 가져올 수 있습니다.');
-        return;
-      }
-      if (bankCount < 1) {
-        alert('은행에 남은 토큰이 없습니다.');
-        return;
-      }
+      if (hasOtherSameTwo) return alert('동일한 토큰 2개를 가져올 때는 다른 토큰을 추가할 수 없습니다.');
+      if (otherPosSum >= 3) return alert('토큰은 한 턴에 최대 3개까지만 가져올 수 있습니다.');
+      if (bankCount < 1) return alert('은행에 남은 토큰이 없습니다.');
       selectedDeltas[color] = 1;
     } else if (currentDelta === 1) {
-      if (otherPosSum > 0) {
-        alert('다른 토큰을 함께 가져올 때는 한 종류당 1개씩만 선택 가능합니다.');
-        return;
-      }
-      if (bankCount < 4) {
-        alert('은행에 토큰이 4개 이상 있을 때만 동일 토큰 2개를 가져올 수 있습니다.');
-        return;
-      }
+      if (otherPosSum > 0) return alert('다른 토큰을 함께 가져올 때는 한 종류당 1개씩만 선택 가능합니다.');
+      if (bankCount < 4) return alert('은행에 토큰이 4개 이상 있을 때만 동일 토큰 2개를 가져올 수 있습니다.');
       selectedDeltas[color] = 2;
     }
   } else if (change === -1) {
     if (currentDelta > 0) {
       selectedDeltas[color] -= 1;
-
       const newPosSum = Object.values(selectedDeltas).filter(d => d > 0).reduce((a, b) => a + b, 0);
       const newNegAbs = Math.abs(Object.values(selectedDeltas).filter(d => d < 0).reduce((a, b) => a + b, 0));
 
@@ -92,21 +94,9 @@ function adjustToken(color, change) {
         alert('+로 선택한 토큰 수량이 줄어들어 반납(-) 선택이 초기화되었습니다.');
       }
     } else {
-      if (color === 'master') {
-        alert('마스터볼 토큰은 반납/교환할 수 없습니다.');
-        return;
-      }
-
-      if (currentNegAbs + 1 > currentPosSum) {
-        alert(`반납(-)하는 토큰 수는 가져올(+) 토큰 수(${currentPosSum}개)를 초과할 수 없습니다.`);
-        return;
-      }
-
-      if (myTokenCount + (currentDelta - 1) < 0) {
-        alert('보유 중인 토큰보다 많이 반납할 수 없습니다.');
-        return;
-      }
-
+      if (color === 'master') return alert('마스터볼 토큰은 반납/교환할 수 없습니다.');
+      if (currentNegAbs + 1 > currentPosSum) return alert(`반납(-)하는 토큰 수는 가져올(+) 토큰 수(${currentPosSum}개)를 초과할 수 없습니다.`);
+      if (myTokenCount + (currentDelta - 1) < 0) return alert('보유 중인 토큰보다 많이 반납할 수 없습니다.');
       selectedDeltas[color] -= 1;
     }
   }
@@ -152,7 +142,7 @@ function updateTokenSelectionUI() {
 }
 
 function openPlayerPokemonModal(playerId) {
-  const player = currentGameState.players.find(p => p.id === playerId);
+  const player = currentGameState.players.find(p => p.id === playerId || p.persistentId === playerId);
   if (!player) return;
 
   document.getElementById('modal-player-title').innerText = `⚡ ${player.name} (${player.character})의 보유 포켓몬`;
@@ -203,7 +193,7 @@ function render() {
         item.innerHTML = `
           <img src="/images/p${idx + 1}.png" class="lobby-player-avatar" alt="p${idx + 1}">
           <div class="lobby-player-info">
-            <span class="lobby-player-name">${p.name} ${p.id === mySocketId ? ' (나)' : ''}</span>
+            <span class="lobby-player-name">${p.name} ${p.persistentId === persistentId ? ' (나)' : ''} ${p.isDisconnected ? '⚠️' : ''}</span>
             <span class="lobby-player-trainer">캐릭터: ${p.character}</span>
           </div>
         `;
@@ -211,7 +201,7 @@ function render() {
       });
     }
 
-    const isHost = players.length > 0 && players[0].id === mySocketId;
+    const isHost = players.length > 0 && players[0].persistentId === persistentId;
     const btnStart = document.getElementById('btnStart');
     if (isHost && players.length >= 2) {
       btnStart.style.display = 'inline-block';
@@ -229,7 +219,7 @@ function render() {
   const turnPlayer = currentGameState.players[turnPlayerIdx];
 
   if (turnPlayer) {
-    document.getElementById('current-turn-player').innerText = `${turnPlayer.name} (${turnPlayer.character})`;
+    document.getElementById('current-turn-player').innerText = `${turnPlayer.name} (${turnPlayer.character})${turnPlayer.isDisconnected ? ' [끊김]' : ''}`;
     document.getElementById('current-turn-avatar').src = `/images/p${turnPlayerIdx + 1}.png`;
   }
 
@@ -247,11 +237,10 @@ function render() {
     `).join('');
   }
 
-  const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
+  const myPlayer = currentGameState.players.find(p => p.persistentId === persistentId);
   const myReservedCount = myPlayer && myPlayer.reserved ? myPlayer.reserved.length : 0;
   const isReservedFull = myReservedCount >= 3;
 
-  // 💡 1, 2, 3단계 덱 커버 이미지 (101.png / 102.png / 103.png) 반영
   ['level1', 'level2', 'level3'].forEach(lvl => {
     const deckSlot = document.getElementById(`deck-slot-${lvl}`);
     if (!deckSlot) return;
@@ -274,7 +263,6 @@ function render() {
     `;
   });
 
-  // 카드리스트 렌더링
   ['level1', 'level2', 'level3', 'rare', 'legendary'].forEach(lvl => {
     const container = document.getElementById(`cards-${lvl}`);
     if (!container) return;
@@ -320,13 +308,15 @@ function render() {
 
     const playerAvatarImg = `/images/p${idx + 1}.png`;
     const cardCount = p.cards.length;
-    const isMe = (p.id === mySocketId);
+    const isMe = (p.persistentId === persistentId);
 
     const pTotalTokens = Object.values(p.tokens).reduce((a, b) => a + b, 0);
     const needsDiscard = isMe && (pTotalTokens > 10);
 
     let warningHTML = '';
-    if (needsDiscard) {
+    if (p.isDisconnected) {
+      warningHTML = `<div class="token-warning-banner">⚠️ 연결 끊김 (재접속 대기 중)</div>`;
+    } else if (needsDiscard) {
       warningHTML = `<div class="token-warning-banner">⚠️ 보유 토큰 초과 (${pTotalTokens}/10)! 버릴 토큰을 선택하세요.</div>`;
     }
 
@@ -392,7 +382,7 @@ function render() {
         ${tokenItemsHTML}
       </div>
 
-      <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.id}')">
+      <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.persistentId}')">
         🔍 보유 포켓몬 이미지로 보기 (${cardCount}장)
       </button>
 
