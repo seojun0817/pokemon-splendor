@@ -290,23 +290,25 @@ io.on('connection', (socket) => {
       let neededMaster = 0;
       const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
+      // 💡 3번 오류 해결 핵심: 보너스 할인 적용 후, 실제 부족한 각 색상별 토큰 수량만큼만 정확히 마스터볼 요구치로 합산
       for (const [type, costVal] of Object.entries(reqCost)) {
         const bonusVal = currentBonus[type] || 0;
-        const costAfterBonus = Math.max(0, costVal - bonusVal);
+        const costAfterBonus = Math.max(0, costVal - bonusVal); // 보너스 할인 반영된 순수 필요량
         const myTokenVal = player.tokens[type] || 0;
 
         if (myTokenVal >= costAfterBonus) {
           paymentTokens[type] = costAfterBonus;
         } else {
-          paymentTokens[type] = myTokenVal;
-          neededMaster += (costAfterBonus - myTokenVal);
+          paymentTokens[type] = myTokenVal; // 가진 만큼만 일반 토큰 소모
+          neededMaster += (costAfterBonus - myTokenVal); // 나머지만 정확히 마스터볼로 대체
         }
       }
 
       if (player.tokens.master < neededMaster) {
-        return socket.emit('errorMsg', '카드를 구매하기 위한 토큰(자원)이 부족합니다.');
+        return socket.emit('errorMsg', `카드를 구매하기 위한 토큰(마스터볼 포함)이 부족합니다. (필요 마스터볼: ${neededMaster}개)`);
       }
 
+      // 일반 볼 토큰 차감 및 은행 반환
       for (const [type, payVal] of Object.entries(paymentTokens)) {
         if (payVal > 0) {
           player.tokens[type] -= payVal;
@@ -314,6 +316,7 @@ io.on('connection', (socket) => {
         }
       }
 
+      // 마스터볼 토큰 차감 및 은행 반환
       if (neededMaster > 0) {
         player.tokens.master -= neededMaster;
         gameState.tokens.master += neededMaster;
