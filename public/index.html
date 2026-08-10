@@ -17,7 +17,6 @@
       <button id="btnStart" style="display:none;">게임 시작</button>
     </div>
 
-    <!-- 💡 대기실 유저 현황 리스트 추가 -->
     <div id="lobby-players-container">
       <h3>대기실 현황 (<span id="lobby-count">0</span> / 4)</h3>
       <div id="lobby-players-list">
@@ -28,7 +27,6 @@
 
   <!-- 메인 게임 화면 -->
   <div id="game-container" style="display:none;">
-    <!-- 상단 턴 안내 헤더 -->
     <header class="top-header">
       <div class="logo">⚡ POKÉMON SPLENDOR</div>
       <div class="turn-indicator">
@@ -38,49 +36,84 @@
       </div>
     </header>
 
-    <!-- 가로 3단 메인 영역 -->
     <div class="dashboard-layout">
       
-      <!-- 1. 좌측: 토큰 창고 -->
+      <!-- 1. 좌측: 토큰 창고 및 교환 컨트롤 & 로그 패널 -->
       <aside class="sidebar-tokens">
-        <div class="panel-title">볼 토큰 창고</div>
+        <div class="panel-title">볼 토큰 창고 (+/- 교환)</div>
         <div class="token-grid">
-          <button data-color="monster" class="token-btn">
+          
+          <div class="token-box">
             <img src="/images/monster.png" alt="몬스터볼">
-            <span id="bank-monster" class="token-count">0</span>
-            <span id="select-monster" class="select-badge" style="display:none;">0</span>
-          </button>
-          <button data-color="super" class="token-btn">
-            <img src="/images/super.png" alt="슈퍼볼">
-            <span id="bank-super" class="token-count">0</span>
-            <span id="select-super" class="select-badge" style="display:none;">0</span>
-          </button>
-          <button data-color="hyper" class="token-btn">
-            <img src="/images/hyper.png" alt="하이퍼볼">
-            <span id="bank-hyper" class="token-count">0</span>
-            <span id="select-hyper" class="select-badge" style="display:none;">0</span>
-          </button>
-          <button data-color="heal" class="token-btn">
-            <img src="/images/heal.png" alt="힐볼">
-            <span id="bank-heal" class="token-count">0</span>
-            <span id="select-heal" class="select-badge" style="display:none;">0</span>
-          </button>
-          <button data-color="quick" class="token-btn">
-            <img src="/images/quick.png" alt="퀵볼">
-            <span id="bank-quick" class="token-count">0</span>
-            <span id="select-quick" class="select-badge" style="display:none;">0</span>
-          </button>
-          <div class="token-btn disabled">
-            <img src="/images/master.png" alt="마스터볼">
-            <span id="bank-master" class="token-count">0</span>
+            <div class="token-bank-num">남은 수량: <span id="bank-monster">0</span></div>
+            <div class="token-control-row">
+              <button class="btn-pm btn-minus" onclick="adjustToken('monster', -1)">-</button>
+              <span id="delta-monster" class="delta-status neutral">0</span>
+              <button class="btn-pm btn-plus" onclick="adjustToken('monster', 1)">+</button>
+            </div>
           </div>
+
+          <div class="token-box">
+            <img src="/images/super.png" alt="슈퍼볼">
+            <div class="token-bank-num">남은 수량: <span id="bank-super">0</span></div>
+            <div class="token-control-row">
+              <button class="btn-pm btn-minus" onclick="adjustToken('super', -1)">-</button>
+              <span id="delta-super" class="delta-status neutral">0</span>
+              <button class="btn-pm btn-plus" onclick="adjustToken('super', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="token-box">
+            <img src="/images/hyper.png" alt="하이퍼볼">
+            <div class="token-bank-num">남은 수량: <span id="bank-hyper">0</span></div>
+            <div class="token-control-row">
+              <button class="btn-pm btn-minus" onclick="adjustToken('hyper', -1)">-</button>
+              <span id="delta-hyper" class="delta-status neutral">0</span>
+              <button class="btn-pm btn-plus" onclick="adjustToken('hyper', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="token-box">
+            <img src="/images/heal.png" alt="힐볼">
+            <div class="token-bank-num">남은 수량: <span id="bank-heal">0</span></div>
+            <div class="token-control-row">
+              <button class="btn-pm btn-minus" onclick="adjustToken('heal', -1)">-</button>
+              <span id="delta-heal" class="delta-status neutral">0</span>
+              <button class="btn-pm btn-plus" onclick="adjustToken('heal', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="token-box">
+            <img src="/images/quick.png" alt="퀵볼">
+            <div class="token-bank-num">남은 수량: <span id="bank-quick">0</span></div>
+            <div class="token-control-row">
+              <button class="btn-pm btn-minus" onclick="adjustToken('quick', -1)">-</button>
+              <span id="delta-quick" class="delta-status neutral">0</span>
+              <button class="btn-pm btn-plus" onclick="adjustToken('quick', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="token-box disabled">
+            <img src="/images/master.png" alt="마스터볼">
+            <div class="token-bank-num">남은 수량: <span id="bank-master">0</span></div>
+            <div class="token-control-row">
+              <span class="delta-status neutral">보관용</span>
+            </div>
+          </div>
+
         </div>
 
-        <button id="btnConfirmTokens" class="action-btn">선택한 토큰 가져오기</button>
+        <button id="btnConfirmTokens" class="action-btn">토큰 가져오기 / 교환</button>
         <button id="btnResetTokens" class="action-btn-secondary">선택 초기화</button>
+        <button id="btnEndTurn" class="action-btn-endturn">턴 넘기기 ➔</button>
+
+        <div class="log-panel">
+          <div class="log-title">📜 게임 로그</div>
+          <div id="game-logs" class="log-list"></div>
+        </div>
       </aside>
 
-      <!-- 2. 중앙: 포켓몬 마켓 진열대 -->
+      <!-- 2. 중앙: 포켓몬 마켓 진열대 및 덱 슬롯 -->
       <main class="market-section">
         <div class="market-row-container special-row-container">
           <div class="special-slot">
@@ -95,16 +128,19 @@
 
         <div class="market-row-container">
           <div class="row-label lvl3">3단계</div>
+          <div id="deck-slot-level3" class="deck-slot"></div>
           <div id="cards-level3" class="card-row"></div>
         </div>
 
         <div class="market-row-container">
           <div class="row-label lvl2">2단계</div>
+          <div id="deck-slot-level2" class="deck-slot"></div>
           <div id="cards-level2" class="card-row"></div>
         </div>
 
         <div class="market-row-container">
           <div class="row-label lvl1">1단계</div>
+          <div id="deck-slot-level1" class="deck-slot"></div>
           <div id="cards-level1" class="card-row"></div>
         </div>
       </main>
@@ -115,6 +151,17 @@
         <div id="players-list"></div>
       </aside>
 
+    </div>
+  </div>
+
+  <!-- 보유 포켓몬 이미지 확인 팝업 모달 -->
+  <div id="pokemon-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-player-title">포켓몬 목록</h2>
+        <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <div id="modal-card-grid" class="modal-card-grid"></div>
     </div>
   </div>
 

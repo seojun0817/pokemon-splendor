@@ -11,16 +11,38 @@ app.use(express.static('public'));
 
 const AVAILABLE_TRAINERS = ['지우', '이슬', '웅', '로켓단'];
 
+const BALL_NAMES_KR = {
+  monster: '몬스터볼',
+  super: '슈퍼볼',
+  hyper: '하이퍼볼',
+  heal: '힐볼',
+  quick: '퀵볼',
+  master: '마스터볼'
+};
+
+const LEVEL_NAMES_KR = {
+  level1: '1단계',
+  level2: '2단계',
+  level3: '3단계'
+};
+
 let gameState = {
   started: false,
   players: [],
   currentTurn: 0,
   tokens: { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0, master: 5 },
   decks: { level1: [], level2: [], level3: [], rare: [], legendary: [] },
-  market: { level1: [], level2: [], level3: [], rare: [], legendary: [] }
+  market: { level1: [], level2: [], level3: [], rare: [], legendary: [] },
+  turnActions: { mainActionDone: false, evolvedDone: false },
+  logs: []
 };
 
-// 카드 덱 무작위 셔플 함수
+function addLog(msg) {
+  const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  gameState.logs.unshift({ time, msg });
+  if (gameState.logs.length > 50) gameState.logs.pop();
+}
+
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -58,6 +80,8 @@ function initGame() {
 
   gameState.decks = JSON.parse(JSON.stringify(INITIAL_CARDS));
   gameState.market = { level1: [], level2: [], level3: [], rare: [], legendary: [] };
+  gameState.turnActions = { mainActionDone: false, evolvedDone: false };
+  gameState.logs = [];
 
   ['level1', 'level2', 'level3', 'rare', 'legendary'].forEach(lvl => {
     if (gameState.decks[lvl]) {
@@ -78,6 +102,8 @@ function initGame() {
       gameState.market[lvl].push(gameState.decks[lvl].shift());
     }
   });
+
+  addLog('🎮 포켓몬 스플랜더 게임이 시작되었습니다!');
 }
 
 function refillMarket(lvl, cardIdx) {
@@ -90,6 +116,11 @@ function refillMarket(lvl, cardIdx) {
 
 function nextTurn() {
   gameState.currentTurn = (gameState.currentTurn + 1) % gameState.players.length;
+  gameState.turnActions = { mainActionDone: false, evolvedDone: false };
+  const currentP = gameState.players[gameState.currentTurn];
+  if (currentP) {
+    addLog(`🔄 ${currentP.name}님의 턴이 시작되었습니다.`);
+  }
 }
 
 io.on('connection', (socket) => {
@@ -121,42 +152,134 @@ io.on('connection', (socket) => {
     io.emit('updateGameState', gameState);
   });
 
-  socket.on('takeTokens', (selectedTokens) => {
+  socket.on('takeTokens', (selectedDeltas) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-
-    const currentTotal = Object.values(player.tokens).reduce((a, b) => a + b, 0);
-    const takeTotal = Object.values(selectedTokens).reduce((a, b) => a + b, 0);
-    if (currentTotal + takeTotal > 10) {
-      return socket.emit('errorMsg', '토큰은 최대 10개까지만 가질 수 있습니다.');
+    if (gameState.turnActions.mainActionDone) {
+      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
     }
 
-    Object.keys(selectedTokens).forEach(color => {
-      const count = selectedTokens[color];
-      if (count > 0 && gameState.tokens[color] >= count) {
-        gameState.tokens[color] -= count;
-        player.tokens[color] += count;
+    const posDeltas = {};
+    let totalPos = 0;
+    let totalNeg = 0;
+    let hasSameTwo = false;
+    let sameTwoColor = null;
+
+    const posStrArr = [];
+    const negStrArr = [];
+
+    for (const [color, delta] of Object.entries(selectedDeltas)) {
+      if (delta > 0) {
+        posDeltas[color] = delta;
+        totalPos += delta;
+        posStrArr.push(`${BALL_NAMES_KR[color]} x${delta}`);
+        if (delta === 2) {
+          hasSameTwo = true;
+          sameTwoColor = color;
+        }
+        if (delta > 2) {
+          return socket.emit('errorMsg', '한 종류의 토큰은 최대 2개까지만 가져올 수 있습니다.');
+        }
+      } else if (delta < 0) {
+        if (color === 'master') {
+          return socket.emit('errorMsg', '마스터볼 토큰은 반납/교환할 수 없습니다.');
+        }
+        if (player.tokens[color] < Math.abs(delta)) {
+          return socket.emit('errorMsg', `${BALL_NAMES_KR[color]} 토큰이 부족하여 반납할 수 없습니다.`);
+        }
+        totalNeg += delta;
+        negStrArr.push(`${BALL_NAMES_KR[color]} x${Math.abs(delta)}`);
       }
+    }
+
+    const negAbs = Math.abs(totalNeg);
+
+    if (negAbs > totalPos) {
+      return socket.emit('errorMsg', '반납(-)하는 토큰 수는 가져올(+) 토큰 수를 초과할 수 없습니다.');
+    }
+
+    if (totalPos > 0) {
+      if (hasSameTwo) {
+        if (Object.keys(posDeltas).length > 1 || totalPos !== 2) {
+          return socket.emit('errorMsg', '동일한 토큰 2개를 가져올 때는 다른 토큰을 함께 가져올 수 없습니다.');
+        }
+        if (gameState.tokens[sameTwoColor] < 4) {
+          return socket.emit('errorMsg', '은행에 해당 토큰이 4개 이상 있을 때만 2개를 가져올 수 있습니다.');
+        }
+      } else {
+        if (totalPos > 3) {
+          return socket.emit('errorMsg', '가져오는 토큰의 총 개수는 최대 3개까지만 가능합니다.');
+        }
+      }
+    } else {
+      if (negAbs === 0) {
+        return socket.emit('errorMsg', '가져올 토큰이나 반납할 토큰을 선택해 주세요.');
+      }
+    }
+
+    let currentTotal = Object.values(player.tokens).reduce((a, b) => a + b, 0);
+    let netChange = totalPos + totalNeg;
+
+    for (const [color, delta] of Object.entries(selectedDeltas)) {
+      if (delta > 0 && gameState.tokens[color] < delta) {
+        return socket.emit('errorMsg', `은행에 ${BALL_NAMES_KR[color]} 토큰 수량이 부족합니다.`);
+      }
+    }
+
+    if (currentTotal + netChange > 10) {
+      return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다. 가져올(+) 수량만큼 필요없는 토큰을 반납(-)하여 10개 이하로 맞춰주세요.');
+    }
+
+    if (currentTotal === 10 && totalPos > 0 && totalPos !== negAbs) {
+      return socket.emit('errorMsg', '토큰 10개 보유 중 교환 시 가져올(+) 수량과 반납할(-) 수량이 동일해야 합니다. (+와 -의 합 = 0)');
+    }
+
+    Object.keys(selectedDeltas).forEach(color => {
+      const delta = selectedDeltas[color];
+      player.tokens[color] += delta;
+      gameState.tokens[color] -= delta;
     });
 
-    nextTurn();
+    gameState.turnActions.mainActionDone = true;
+
+    if (negAbs > 0 && totalPos > 0) {
+      addLog(`🔄 ${player.name}님이 [${negStrArr.join(', ')}] 토큰을 반납하고 [${posStrArr.join(', ')}] 토큰을 교환했습니다.`);
+    } else if (totalPos > 0) {
+      addLog(`🪙 ${player.name}님이 [${posStrArr.join(', ')}] 토큰을 가져왔습니다.`);
+    }
+
     io.emit('updateGameState', gameState);
   });
 
-  socket.on('buyCard', ({ cardId, isEvolution }) => {
+  socket.on('buyCard', ({ cardId, isEvolution, isReserved }) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
+
+    if (isEvolution) {
+      if (gameState.turnActions.evolvedDone) {
+        return socket.emit('errorMsg', '진화는 한 턴에 한 번만 가능합니다.');
+      }
+    } else {
+      if (gameState.turnActions.mainActionDone) {
+        return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
+      }
+    }
 
     let targetCard = null;
     let targetLvl = null;
 
-    ['level1', 'level2', 'level3', 'rare', 'legendary'].forEach(lvl => {
-      const idx = gameState.market[lvl].findIndex(c => c.id === cardId);
-      if (idx !== -1) {
-        targetCard = gameState.market[lvl][idx];
-        targetLvl = lvl;
-      }
-    });
+    if (isReserved) {
+      const rIdx = player.reserved.findIndex(c => c.id === cardId);
+      if (rIdx !== -1) targetCard = player.reserved[rIdx];
+    } else {
+      ['level1', 'level2', 'level3', 'rare', 'legendary'].forEach(lvl => {
+        const idx = gameState.market[lvl].findIndex(c => c.id === cardId);
+        if (idx !== -1) {
+          targetCard = gameState.market[lvl][idx];
+          targetLvl = lvl;
+        }
+      });
+    }
 
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
 
@@ -177,10 +300,12 @@ io.on('connection', (socket) => {
       }
 
       if (!canEvolve) {
-        return socket.emit('errorMsg', '진화에 필요한 카드 에너지 보너스가 부족합니다. (진화 시 토큰 지불 불가)');
+        return socket.emit('errorMsg', '진화에 필요한 카드 에너지 보너스가 부족합니다.');
       }
 
       player.cards.splice(basePokemonIdx, 1, targetCard);
+      gameState.turnActions.evolvedDone = true;
+      addLog(`⚡ ${player.name}님이 [${targetCard.name}] 포켓몬으로 진화시켰습니다! (+${targetCard.points}점)`);
 
     } else {
       const reqCost = targetCard.cost;
@@ -213,26 +338,39 @@ io.on('connection', (socket) => {
       gameState.tokens.master += neededMaster;
 
       player.cards.push(targetCard);
+      gameState.turnActions.mainActionDone = true;
+      addLog(`🐾 ${player.name}님이 [${targetCard.name}] 카드를 포획했습니다! (+${targetCard.points}점)`);
     }
 
     player.points = player.cards.reduce((sum, c) => sum + c.points, 0);
 
-    refillMarket(targetLvl, gameState.market[targetLvl].findIndex(c => c.id === cardId));
+    if (isReserved) {
+      const rIdx = player.reserved.findIndex(c => c.id === cardId);
+      player.reserved.splice(rIdx, 1);
+    } else {
+      refillMarket(targetLvl, gameState.market[targetLvl].findIndex(c => c.id === cardId));
+    }
 
     if (player.points >= 18) {
+      addLog(`🏆🎉 ${player.name}님이 최종 승리 조건(18점)을 달성했습니다!`);
       io.emit('gameOver', { winner: player.name, character: player.character, points: player.points });
       return;
     }
 
-    nextTurn();
     io.emit('updateGameState', gameState);
   });
 
-  // 💡 [수정] 카드 킵(Keep) - 희귀/전설 카드 차단 규칙
+  // 공개 마켓 카드 킵하기
   socket.on('reserveCard', (cardId) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-    if (player.reserved.length >= 3) return socket.emit('errorMsg', '최대 3장까지만 킵할 수 있습니다.');
+    if (gameState.turnActions.mainActionDone) {
+      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
+    }
+
+    if (player.reserved && player.reserved.length >= 3) {
+      return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
+    }
 
     let targetCard = null;
     let targetLvl = null;
@@ -247,18 +385,92 @@ io.on('connection', (socket) => {
 
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
 
-    // 전설 및 희귀 카드 킵 불가 처리
     if (targetLvl === 'rare' || targetLvl === 'legendary') {
       return socket.emit('errorMsg', '전설 및 희귀 카드는 킵(보관)할 수 없습니다.');
     }
 
     player.reserved.push(targetCard);
+    let gotMaster = false;
     if (gameState.tokens.master > 0) {
       gameState.tokens.master -= 1;
       player.tokens.master += 1;
+      gotMaster = true;
     }
 
     refillMarket(targetLvl, gameState.market[targetLvl].findIndex(c => c.id === cardId));
+
+    gameState.turnActions.mainActionDone = true;
+    addLog(`🔒 ${player.name}님이 [${targetCard.name}] 카드를 킵했습니다.${gotMaster ? ' (마스터볼 +1)' : ''}`);
+
+    io.emit('updateGameState', gameState);
+  });
+
+  // 💡 덱 맨 위에서 바로 킵하기
+  socket.on('reserveFromDeck', (lvl) => {
+    const player = gameState.players[gameState.currentTurn];
+    if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
+    if (gameState.turnActions.mainActionDone) {
+      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션(토큰/포획/킵)을 수행했습니다.');
+    }
+
+    if (player.reserved && player.reserved.length >= 3) {
+      return socket.emit('errorMsg', '카드는 최대 3장까지만 킵할 수 있습니다.');
+    }
+
+    if (!gameState.decks[lvl] || gameState.decks[lvl].length === 0) {
+      return socket.emit('errorMsg', '해당 덱에 남은 카드가 없습니다.');
+    }
+
+    // 덱 맨 위에서 1장 뽑기 (비공개)
+    const targetCard = gameState.decks[lvl].shift();
+    player.reserved.push(targetCard);
+
+    let gotMaster = false;
+    if (gameState.tokens.master > 0) {
+      gameState.tokens.master -= 1;
+      player.tokens.master += 1;
+      gotMaster = true;
+    }
+
+    gameState.turnActions.mainActionDone = true;
+    addLog(`🔒 ${player.name}님이 ${LEVEL_NAMES_KR[lvl]} 덱 맨 위에서 카드를 비밀 킵했습니다.${gotMaster ? ' (마스터볼 +1)' : ''}`);
+
+    io.emit('updateGameState', gameState);
+  });
+
+  socket.on('discardToken', (color) => {
+    const player = gameState.players[gameState.currentTurn];
+    if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
+
+    if (color === 'master') {
+      return socket.emit('errorMsg', '마스터볼 토큰은 버릴 수 없습니다.');
+    }
+
+    const totalTokens = Object.values(player.tokens).reduce((a, b) => a + b, 0);
+    if (totalTokens <= 10) {
+      return socket.emit('errorMsg', '토큰 수량이 10개 이하이므로 버릴 필요가 없습니다.');
+    }
+
+    if (!player.tokens[color] || player.tokens[color] <= 0) {
+      return socket.emit('errorMsg', '버릴 토큰이 없습니다.');
+    }
+
+    player.tokens[color] -= 1;
+    gameState.tokens[color] += 1;
+
+    addLog(`🗑️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰 1개를 버렸습니다.`);
+
+    io.emit('updateGameState', gameState);
+  });
+
+  socket.on('endTurn', () => {
+    const player = gameState.players[gameState.currentTurn];
+    if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
+
+    const totalTokens = Object.values(player.tokens).reduce((a, b) => a + b, 0);
+    if (totalTokens > 10) {
+      return socket.emit('errorMsg', `보유 토큰이 10개를 초과했습니다 (${totalTokens}/10). 일반 볼 토큰을 선택하여 10개 이하로 맞춰주세요.`);
+    }
 
     nextTurn();
     io.emit('updateGameState', gameState);
@@ -273,5 +485,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`포켓몬 스플랜더 게임 서버 실행 완료`);
+  console.log(`포켓몬 스플랜더 게임 서버 실행 완료: http://localhost:${PORT}`);
 });
