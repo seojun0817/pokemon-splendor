@@ -2,7 +2,6 @@ const socket = io();
 let mySocketId = null;
 let currentGameState = null;
 
-// 💡 LocalStorage를 통한 고유 세션 식별자 관리
 let persistentId = localStorage.getItem('splendor_player_id');
 if (!persistentId) {
   persistentId = 'user_' + Math.random().toString(36).substr(2, 9);
@@ -21,7 +20,6 @@ socket.on('init', (data) => {
   mySocketId = data.socketId;
   currentGameState = data.gameState;
   
-  // 💡 이미 접속 이력이 있는 사용자 자동 재접속 시도
   const savedName = localStorage.getItem('splendor_player_name');
   if (savedName) {
     document.getElementById('playerName').value = savedName;
@@ -120,6 +118,37 @@ document.getElementById('btnConfirmTokens').addEventListener('click', () => {
 
 document.getElementById('btnEndTurn').addEventListener('click', () => {
   socket.emit('endTurn');
+});
+
+// 채팅 전송 및 수신 로직
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value;
+  if (!msg.trim()) return;
+
+  socket.emit('sendChatMessage', msg);
+  input.value = '';
+}
+
+document.getElementById('btnSendChat').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendChat();
+});
+
+socket.on('receiveChatMessage', (data) => {
+  const chatLogs = document.getElementById('chat-logs');
+  if (!chatLogs) return;
+
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'chat-item';
+  msgDiv.innerHTML = `
+    <span class="chat-sender">[${data.sender}]</span>
+    <span class="chat-text">${data.msg}</span>
+    <span class="chat-time">${data.time}</span>
+  `;
+
+  chatLogs.appendChild(msgDiv);
+  chatLogs.scrollTop = chatLogs.scrollHeight;
 });
 
 function updateTokenSelectionUI() {

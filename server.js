@@ -37,7 +37,6 @@ let gameState = {
   logs: []
 };
 
-// 재접속 타이머 관리 객체
 const disconnectTimers = {};
 
 function addLog(msg) {
@@ -120,7 +119,6 @@ function refillMarket(lvl, cardIdx) {
 function nextTurn() {
   if (gameState.players.length === 0) return;
   
-  // 끊기지 않은 유효한 플레이어가 있는지 확인
   let attempts = 0;
   do {
     gameState.currentTurn = (gameState.currentTurn + 1) % gameState.players.length;
@@ -137,12 +135,10 @@ function nextTurn() {
 io.on('connection', (socket) => {
   socket.emit('init', { socketId: socket.id, gameState });
 
-  // 💡 방 참가 또는 재접속(Rejoin)
   socket.on('joinRoom', ({ name, persistentId }) => {
     const existingPlayer = gameState.players.find(p => p.persistentId === persistentId);
 
     if (existingPlayer) {
-      // 재접속 처리
       existingPlayer.id = socket.id;
       existingPlayer.isDisconnected = false;
 
@@ -186,9 +182,7 @@ io.on('connection', (socket) => {
   socket.on('takeTokens', (selectedDeltas) => {
     const player = gameState.players[gameState.currentTurn];
     if (player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-    if (gameState.turnActions.mainActionDone) {
-      return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
-    }
+    if (gameState.turnActions.mainActionDone) return socket.emit('errorMsg', '이번 턴에 이미 메인 액션을 수행했습니다.');
 
     const posDeltas = {};
     let totalPos = 0;
@@ -441,7 +435,24 @@ io.on('connection', (socket) => {
     io.emit('updateGameState', gameState);
   });
 
-  // 💡 일시적 재접속 대기 (Disconnect Timeout - 5분 유예)
+  // 💡 실시간 채팅 메시지 수신 및 방송
+  socket.on('sendChatMessage', (msg) => {
+    const player = gameState.players.find(p => p.id === socket.id);
+    if (!player) return;
+
+    const trimmedMsg = msg.trim();
+    if (!trimmedMsg) return;
+
+    const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+    io.emit('receiveChatMessage', {
+      sender: player.name,
+      character: player.character,
+      msg: trimmedMsg,
+      time: time
+    });
+  });
+
   socket.on('disconnect', () => {
     const player = gameState.players.find(p => p.id === socket.id);
     if (!player) return;
@@ -449,24 +460,22 @@ io.on('connection', (socket) => {
     player.isDisconnected = true;
     addLog(`⚠️ ${player.name}님의 연결이 끊겼습니다. (5분 재접속 대기)`);
 
-    // 끊긴 플레이어가 현재 턴이었다면 다음 플레이어에게 턴 스킵
     if (gameState.started && gameState.players[gameState.currentTurn].id === player.id) {
       nextTurn();
     }
 
     io.emit('updateGameState', gameState);
 
-    // 5분 동안 재접속하지 않으면 완전 삭제
     disconnectTimers[player.persistentId] = setTimeout(() => {
       const pIdx = gameState.players.findIndex(p => p.persistentId === player.persistentId);
       if (pIdx !== -1) {
-        addLog(`❌ ${gameState.players[pIdx].name}님이 제한 시간을 초과하여 퇴장 처리되었습니다.`);
+        addLog(`❌ ${gameState.players[pIdx].name}님이 제한 시간(5분)을 초과하여 퇴장 처리되었습니다.`);
         gameState.players.splice(pIdx, 1);
         if (gameState.players.length === 0) gameState.started = false;
         io.emit('updateGameState', gameState);
       }
       delete disconnectTimers[player.persistentId];
-    }, 300000); // 300초 (300,000ms)
+    }, 300000); // 5분
   });
 });
 
