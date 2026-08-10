@@ -42,6 +42,13 @@ document.getElementById('btnJoin').addEventListener('click', () => {
 
 document.getElementById('btnStart').addEventListener('click', () => socket.emit('startGame'));
 
+// 💡 방장 권한 게임 리셋 함수
+function resetGame() {
+  if (confirm('정말로 게임을 처음부터 다시 시작하시겠습니까? (모든 진행 상황이 초기화됩니다)')) {
+    socket.emit('resetGame');
+  }
+}
+
 function adjustToken(color, change) {
   const currentDelta = selectedDeltas[color];
   const myPlayer = currentGameState ? currentGameState.players.find(p => p.id === mySocketId) : null;
@@ -287,6 +294,14 @@ function render() {
   document.getElementById('lobby').style.display = 'none';
   document.getElementById('game-container').style.display = 'flex';
 
+  // 💡 내가 방장(첫 번째 플레이어)인지 확인하여 리셋 버튼 노출 제어
+  const players = currentGameState.players;
+  const isHost = players.length > 0 && players[0].id === mySocketId;
+  const btnResetGame = document.getElementById('btnResetGame');
+  if (btnResetGame) {
+    btnResetGame.style.display = isHost ? 'inline-block' : 'none';
+  }
+
   const turnPlayerIdx = currentGameState.currentTurn;
   const turnPlayer = currentGameState.players[turnPlayerIdx];
 
@@ -386,11 +401,10 @@ function render() {
 
   currentGameState.players.forEach((p, idx) => {
     const pEl = document.createElement('div');
-    pEl.className = `player-card ${idx === turnPlayerIdx ? 'active-turn' : ''}`;
+    const isMe = (p.id === mySocketId);
 
     const playerAvatarImg = `/images/p${idx + 1}.png`;
     const cardCount = p.cards.length;
-    const isMe = (p.id === mySocketId);
 
     const pTotalTokens = Object.values(p.tokens).reduce((a, b) => a + b, 0);
     const needsDiscard = isMe && (pTotalTokens > 10);
@@ -409,70 +423,65 @@ function render() {
       return `<div class="player-token-item"><img src="/images/${color}.png"> ${count}${discardBtn}</div>`;
     }).join('');
 
-    let reservedHTML = '';
-    if (p.reserved && p.reserved.length > 0) {
-      if (isMe) {
-        const reservedItems = p.reserved.map(c => `
-          <div class="mini-reserved-card">
-            <img src="${c.image}" alt="${c.name}">
-            <span>${c.name}</span>
-            <div class="mini-card-actions">
-              <button onclick="buyCard('${c.id}', false, true)">포획</button>
-              ${c.evolutionFrom ? `<button class="btn-evo" onclick="buyCard('${c.id}', true, true)">진화</button>` : ''}
-            </div>
+    let reservedSideHTML = '';
+    if (isMe && p.reserved && p.reserved.length > 0) {
+      const reservedItems = p.reserved.map(c => `
+        <div class="mini-reserved-card">
+          <img src="${c.image}" alt="${c.name}">
+          <span>${c.name}</span>
+          <div class="mini-card-actions">
+            <button onclick="buyCard('${c.id}', false, true)">포획</button>
+            ${c.evolutionFrom ? `<button class="btn-evo" onclick="buyCard('${c.id}', true, true)">진화</button>` : ''}
           </div>
-        `).join('');
+        </div>
+      `).join('');
 
-        reservedHTML = `
-          <div class="player-reserved-section">
-            <div class="reserved-title">🔒 내가 킵한 카드 (${p.reserved.length}/3)</div>
-            <div class="reserved-list">${reservedItems}</div>
-          </div>
-        `;
-      } else {
-        reservedHTML = `
-          <div class="player-reserved-section">
-            <div class="reserved-title">🔒 킵한 카드: ${p.reserved.length}장 (비공개)</div>
-          </div>
-        `;
-      }
+      reservedSideHTML = `
+        <div class="player-reserved-side-box">
+          <div class="reserved-side-title">🔒 킵한 카드 (${p.reserved.length}/3)</div>
+          <div class="reserved-side-list">${reservedItems}</div>
+        </div>
+      `;
     }
 
-    pEl.innerHTML = `
-      ${warningHTML}
-      <div class="player-header">
-        <img src="${playerAvatarImg}" class="player-avatar" alt="p${idx + 1}">
-        <div class="player-info-text">
-          <div class="player-name-tag">${p.name} ${isMe ? ' (나)' : ''}</div>
-          <div class="player-trainer-tag">트레이너: ${p.character}</div>
+    const innerCardHTML = `
+      <div class="player-card ${idx === turnPlayerIdx ? 'active-turn' : ''}">
+        ${warningHTML}
+        <div class="player-header">
+          <img src="${playerAvatarImg}" class="player-avatar" alt="p${idx + 1}">
+          <div class="player-info-text">
+            <div class="player-name-tag">${p.name} ${isMe ? ' (나)' : ''}</div>
+            <div class="player-trainer-tag">트레이너: ${p.character}</div>
+          </div>
+          
+          <div class="player-score-box">
+            <div class="player-score">🏆 ${p.points}점</div>
+            <div class="player-score-sub">목표: 18점</div>
+          </div>
         </div>
-        
-        <div class="player-score-box">
-          <div class="player-score">🏆 ${p.points}점</div>
-          <div class="player-score-sub">목표: 18점</div>
+
+        <div class="player-tokens-header">
+          <span>볼 토큰</span>
+          <span class="player-total-token-badge">총 ${pTotalTokens} / 10개</span>
         </div>
+
+        <div class="player-tokens-row">
+          ${tokenItemsHTML}
+        </div>
+
+        <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.id}')">
+          🔍 보유 포켓몬 이미지로 보기 (${cardCount}장)
+        </button>
       </div>
-
-      <div class="player-tokens-header">
-        <span>볼 토큰</span>
-        <span class="player-total-token-badge">총 ${pTotalTokens} / 10개</span>
-      </div>
-
-      <div class="player-tokens-row">
-        ${tokenItemsHTML}
-      </div>
-
-      <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.id}')">
-        🔍 보유 포켓몬 이미지로 보기 (${cardCount}장)
-      </button>
-
-      ${reservedHTML}
     `;
-    playersList.appendChild(pEl);
+
+    const rowWrapper = document.createElement('div');
+    rowWrapper.className = 'player-row-wrapper';
+    rowWrapper.innerHTML = innerCardHTML + reservedSideHTML;
+    playersList.appendChild(rowWrapper);
   });
 }
 
-// 💡 마스터볼 개수 계산 및 확인 팝업 로직 완벽 적용 (킵한 카드 포함)
 function buyCard(cardId, isEvolution, isReserved) {
   if (!currentGameState) return;
   const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
@@ -512,7 +521,7 @@ function buyCard(cardId, isEvolution, isReserved) {
 
     if (neededMaster > 0) {
       if (myPlayer.tokens.master < neededMaster) {
-        return alert(`카드를 구매하기 위한 마스터볼이 부족합니다. (필요: ${neededMaster}개, 보유: ${myPlayer.tokens.master}개)`);
+        return alert(`마스터볼 토큰이 부족하여 포획할 수 없습니다. (필요: ${neededMaster}개, 보유: ${myPlayer.tokens.master}개)`);
       }
       
       const confirmUse = confirm(`일반 토큰이 부족하여 마스터볼 ${neededMaster}개가 소모됩니다. 포획하시겠습니까?`);

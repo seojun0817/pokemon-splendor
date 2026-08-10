@@ -1,5 +1,5 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: #ffffff; min-width: 2400px; font-size: 1.5rem; }
+body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: #ffffff; min-width: 2500px; font-size: 1.5rem; }
 
 /* 대기실 (Lobby) */
 #lobby { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #111319; }
@@ -24,6 +24,12 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 #game-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .top-header { display: flex; justify-content: space-between; align-items: center; background: #252836; padding: 20px 45px; border-bottom: 4px solid #333849; flex-shrink: 0; }
 .logo { font-size: 2.6rem; font-weight: 900; color: #ffcb05; text-shadow: 3px 3px #3d7dca; }
+.header-right-group { display: flex; align-items: center; gap: 20px; }
+
+/* 💡 방장 리셋 버튼 스타일 */
+.btn-host-reset { background: #e74c3c; color: white; border: none; border-radius: 30px; padding: 12px 24px; font-weight: bold; font-size: 1.4rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(231,76,60,0.4); }
+.btn-host-reset:hover { background: #c0392b; }
+
 .turn-indicator { display: flex; align-items: center; gap: 20px; background: #1a1c23; padding: 12px 30px; border-radius: 40px; border: 3px solid #ffcb05; font-size: 1.7rem; }
 .turn-name { font-size: 1.9rem; font-weight: bold; color: #ffcb05; }
 .avatar-small { width: 64px; height: 64px; border-radius: 50%; border: 3px solid #ffcb05; object-fit: cover; }
@@ -31,8 +37,8 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .dashboard-layout { display: flex; gap: 32px; padding: 32px; flex: 1; overflow: hidden; }
 .panel-title { font-weight: bold; font-size: 2rem; color: #a0a5b5; margin-bottom: 20px; border-bottom: 3px solid #333849; padding-bottom: 12px; }
 
-/* 💡 좌측 토큰 창고 & 로그 창 패널 전체에 스크롤바 부여 */
-.sidebar-tokens { width: 520px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
+/* 1. 좌측 사이드바: 토큰 창고 패널 */
+.sidebar-tokens { width: 480px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
 .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .token-box { background: #1a1c23; border: 4px solid #333849; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -58,41 +64,7 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .action-btn-endturn { background: #2ecc71; color: #ffffff; font-weight: bold; padding: 20px; border: none; border-radius: 16px; cursor: pointer; margin-top: 6px; font-size: 1.7rem; }
 .action-btn-endturn:hover { background: #27ae60; }
 
-/* 게임 행동 로그 */
-.log-panel { margin-top: 14px; background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; min-height: 250px; max-height: 350px; }
-.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 14px; flex-shrink: 0; }
-.log-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; }
-.log-item { font-size: 1.4rem; line-height: 1.4; color: #d1d5db; background: #252836; padding: 12px 16px; border-radius: 8px; border-left: 6px solid #ffcb05; word-break: keep-all; }
-.log-time { font-size: 1.2rem; color: #777; margin-right: 8px; }
-
-/* 💬 채팅 토글 버튼 및 팝업창 스타일 */
-.btn-chat-toggle { width: 100%; background: #0984e3; color: white; border: none; border-radius: 16px; padding: 18px; font-weight: bold; font-size: 1.6rem; cursor: pointer; transition: 0.2s; margin-top: 10px; margin-bottom: 8px; flex-shrink: 0; }
-.btn-chat-toggle:hover { background: #074b83; }
-
-.chat-popup { background: #1a1c23; border: 4px solid #ffcb05; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; height: 440px; position: relative; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 50; }
-.chat-popup.hidden { display: none; }
-
-.chat-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 10px; margin-bottom: 14px; font-size: 1.6rem; font-weight: bold; color: #ffcb05; flex-shrink: 0; }
-.chat-popup-close-btn { background: none; border: none; color: #aaa; font-size: 2.4rem; cursor: pointer; }
-.chat-popup-close-btn:hover { color: #fff; }
-
-.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 14px; max-height: 280px; }
-.chat-item { font-size: 1.4rem; line-height: 1.4; word-break: break-all; background: #252836; padding: 10px 14px; border-radius: 8px; }
-.chat-sender { font-weight: bold; color: #ffcb05; margin-right: 8px; }
-.chat-text { color: #ffffff; }
-.chat-time { font-size: 1.2rem; color: #777; float: right; margin-top: 4px; }
-
-.chat-input-row { display: flex; gap: 10px; flex-shrink: 0; }
-.chat-input-row input { flex: 1; background: #252836; border: 2px solid #444; border-radius: 8px; padding: 14px 18px; color: #fff; font-size: 1.5rem; }
-.chat-input-row button { background: #ffcb05; color: #111; border: none; border-radius: 8px; padding: 14px 24px; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
-.chat-input-row button:hover { background: #ffe066; }
-
-/* 🌟 중앙 턴 알림 토스트 팝업 */
-.turn-toast { position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(26, 28, 35, 0.95); border: 6px solid #ffcb05; color: #ffcb05; font-size: 3.6rem; font-weight: 900; padding: 32px 70px; border-radius: 100px; box-shadow: 0 0 60px rgba(255, 203, 5, 0.7); z-index: 2000; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
-.turn-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-.turn-toast.hidden { display: none; }
-
-/* 중앙 마켓 진열대 및 카드 (2배 확대) */
+/* 2. 중앙 마켓 영역 */
 .market-section { flex: 1; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; justify-content: flex-start; gap: 24px; overflow-y: auto; }
 .market-row-container { display: flex; align-items: center; gap: 24px; background: #1a1c23; padding: 16px 24px; border-radius: 16px; }
 .special-row-container { display: flex; gap: 80px; }
@@ -105,7 +77,7 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .row-label.lvl2 { color: #74b9ff; }
 .row-label.lvl1 { color: #55efc4; }
 
-/* 덱 슬롯 (2배 확대) */
+/* 덱 슬롯 */
 .deck-slot { width: 220px; height: 390px; flex-shrink: 0; }
 .deck-card { width: 100%; height: 100%; background: linear-gradient(135deg, #2c3e50, #1a252f); border: 4px solid #ffcb05; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
 .deck-card-inner { flex: 1; width: 100%; border: 3px solid #444; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111319; padding: 8px; gap: 8px; overflow: hidden; }
@@ -117,7 +89,7 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 
 .card-row { display: flex; gap: 20px; flex: 1; }
 
-/* 마켓 카드 (2배 확대) */
+/* 마켓 카드 */
 .card { width: 260px; height: 390px; background: #2f3446; border: 4px solid #444a5d; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
 .card.rare { border-color: #ffeaa7; }
 .card.legendary { border-color: #a29bfe; }
@@ -133,9 +105,43 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .card-actions button.btn-evo { background: #00b894; }
 .card-actions button.btn-keep { background: #6c5ce7; }
 
-/* 우측 플레이어 보드 (2배 확대) */
-.sidebar-players { width: 560px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; flex-shrink: 0; }
-.player-card { background: #1a1c23; border: 4px solid #333849; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+/* 3. 우측 사이드바 (채팅창, 로그, 플레이어 현황) */
+.sidebar-right-panel { width: 620px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
+
+/* 채팅 토글 및 팝업 */
+.btn-chat-toggle { width: 100%; background: #0984e3; color: white; border: none; border-radius: 16px; padding: 18px; font-weight: bold; font-size: 1.6rem; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+.btn-chat-toggle:hover { background: #074b83; }
+
+.chat-popup { background: #1a1c23; border: 4px solid #ffcb05; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; height: 400px; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 50; }
+.chat-popup.hidden { display: none; }
+
+.chat-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 10px; margin-bottom: 14px; font-size: 1.6rem; font-weight: bold; color: #ffcb05; flex-shrink: 0; }
+.chat-popup-close-btn { background: none; border: none; color: #aaa; font-size: 2.4rem; cursor: pointer; }
+.chat-popup-close-btn:hover { color: #fff; }
+
+.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 14px; }
+.chat-item { font-size: 1.4rem; line-height: 1.4; word-break: break-all; background: #252836; padding: 10px 14px; border-radius: 8px; }
+.chat-sender { font-weight: bold; color: #ffcb05; margin-right: 8px; }
+.chat-text { color: #ffffff; }
+.chat-time { font-size: 1.2rem; color: #777; float: right; margin-top: 4px; }
+
+.chat-input-row { display: flex; gap: 10px; flex-shrink: 0; }
+.chat-input-row input { flex: 1; background: #252836; border: 2px solid #444; border-radius: 8px; padding: 14px 18px; color: #fff; font-size: 1.5rem; }
+.chat-input-row button { background: #ffcb05; color: #111; border: none; border-radius: 8px; padding: 14px 24px; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+.chat-input-row button:hover { background: #ffe066; }
+
+/* 게임 로그 패널 */
+.log-panel { background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; min-height: 220px; max-height: 300px; }
+.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 14px; flex-shrink: 0; }
+.log-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; }
+.log-item { font-size: 1.3rem; line-height: 1.4; color: #d1d5db; background: #252836; padding: 10px 14px; border-radius: 8px; border-left: 6px solid #ffcb05; word-break: keep-all; }
+.log-time { font-size: 1.1rem; color: #777; margin-right: 8px; }
+
+/* 플레이어 현황 및 킵한 카드 */
+.players-container { display: flex; flex-direction: column; gap: 20px; }
+.player-row-wrapper { display: flex; gap: 15px; align-items: flex-start; }
+
+.player-card { background: #1a1c23; border: 4px solid #333849; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 .player-card.active-turn { border-color: #ffcb05; background: #212431; box-shadow: 0 0 20px rgba(255, 203, 5, 0.35); }
 
 .player-header { display: flex; align-items: center; gap: 16px; }
@@ -162,17 +168,17 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .btn-view-pokemon { width: 100%; padding: 14px; background: #34495e; color: #ffcb05; border: 3px solid #ffcb05; border-radius: 10px; font-size: 1.4rem; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.2s; }
 .btn-view-pokemon:hover { background: #2c3e50; }
 
-.player-reserved-section { margin-top: 8px; padding-top: 8px; border-top: 3px dashed #333849; }
-.reserved-title { font-size: 1.4rem; color: #ffcb05; font-weight: bold; margin-bottom: 8px; }
-.reserved-list { display: flex; gap: 14px; overflow-x: auto; }
-.mini-reserved-card { width: 150px; background: #252836; border: 3px solid #444a5d; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
-.mini-reserved-card img { width: 100%; height: 125px; object-fit: fill; border-radius: 8px; }
+.player-reserved-side-box { width: 220px; background: #1a1c23; border: 3px solid #6c5ce7; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.reserved-side-title { font-size: 1.3rem; color: #a29bfe; font-weight: bold; text-align: center; border-bottom: 2px solid #333849; padding-bottom: 8px; }
+.reserved-side-list { display: flex; flex-direction: column; gap: 10px; }
+.mini-reserved-card { width: 100%; background: #252836; border: 2px solid #444a5d; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mini-reserved-card img { width: 100%; height: 160px; object-fit: fill; border-radius: 8px; }
 .mini-reserved-card span { font-size: 1.2rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
 .mini-card-actions { display: flex; gap: 6px; width: 100%; }
-.mini-card-actions button { flex: 1; font-size: 1.2rem; padding: 8px 0; border: none; border-radius: 6px; background: #0984e3; color: white; font-weight: bold; cursor: pointer; }
+.mini-card-actions button { flex: 1; font-size: 1.1rem; padding: 8px 0; border: none; border-radius: 6px; background: #0984e3; color: white; font-weight: bold; cursor: pointer; }
 .mini-card-actions button.btn-evo { background: #00b894; }
 
-/* 포켓몬 모달 (2배 확대) */
+/* 포켓몬 모달 */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: #252836; border-radius: 24px; padding: 40px; width: 90%; max-width: 1300px; max-height: 90vh; display: flex; flex-direction: column; gap: 25px; border: 4px solid #ffcb05; box-shadow: 0 20px 45px rgba(0,0,0,0.6); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 20px; }
@@ -182,3 +188,8 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .modal-card-grid { display: flex; flex-wrap: wrap; gap: 24px; overflow-y: auto; padding: 20px; justify-content: center; }
 .modal-card-item { width: 240px; height: 360px; border-radius: 14px; overflow: hidden; border: 3px solid #444; background: #1a1c23; }
 .modal-card-item img { width: 100%; height: 100%; object-fit: fill; }
+
+/* 🌟 중앙 턴 알림 토스트 팝업 */
+.turn-toast { position: fixed; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(26, 28, 35, 0.95); border: 6px solid #ffcb05; color: #ffcb05; font-size: 3.6rem; font-weight: 900; padding: 32px 70px; border-radius: 100px; box-shadow: 0 0 60px rgba(255, 203, 5, 0.7); z-index: 2000; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
+.turn-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+.turn-toast.hidden { display: none; }
