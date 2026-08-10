@@ -21,8 +21,8 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .lobby-empty { text-align: center; color: #777; font-size: 1.6rem; padding: 20px 0; }
 
 /* 메인 대시보드 레이아웃 */
-#game-container { display: flex; flex-direction: column; height: 100vh; }
-.top-header { display: flex; justify-content: space-between; align-items: center; background: #252836; padding: 20px 45px; border-bottom: 4px solid #333849; }
+#game-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.top-header { display: flex; justify-content: space-between; align-items: center; background: #252836; padding: 20px 45px; border-bottom: 4px solid #333849; flex-shrink: 0; }
 .logo { font-size: 2.6rem; font-weight: 900; color: #ffcb05; text-shadow: 3px 3px #3d7dca; }
 .turn-indicator { display: flex; align-items: center; gap: 20px; background: #1a1c23; padding: 12px 30px; border-radius: 40px; border: 3px solid #ffcb05; font-size: 1.7rem; }
 .turn-name { font-size: 1.9rem; font-weight: bold; color: #ffcb05; }
@@ -31,8 +31,8 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .dashboard-layout { display: flex; gap: 32px; padding: 32px; flex: 1; overflow: hidden; }
 .panel-title { font-weight: bold; font-size: 2rem; color: #a0a5b5; margin-bottom: 20px; border-bottom: 3px solid #333849; padding-bottom: 12px; }
 
-/* 좌측 토큰 창고 & 로그 창 (2배 확대) */
-.sidebar-tokens { width: 500px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+/* 💡 좌측 토큰 창고 & 로그 창 패널 전체에 스크롤바 부여 */
+.sidebar-tokens { width: 520px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
 .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .token-box { background: #1a1c23; border: 4px solid #333849; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -59,30 +59,30 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .action-btn-endturn:hover { background: #27ae60; }
 
 /* 게임 행동 로그 */
-.log-panel { margin-top: 14px; background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; flex: 1; min-height: 320px; overflow: hidden; }
-.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 14px; }
+.log-panel { margin-top: 14px; background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; min-height: 250px; max-height: 350px; }
+.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 14px; flex-shrink: 0; }
 .log-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; }
 .log-item { font-size: 1.4rem; line-height: 1.4; color: #d1d5db; background: #252836; padding: 12px 16px; border-radius: 8px; border-left: 6px solid #ffcb05; word-break: keep-all; }
 .log-time { font-size: 1.2rem; color: #777; margin-right: 8px; }
 
-/* 💬 채팅 토글 버튼 및 팝업창 스타일 (2배 확대) */
-.btn-chat-toggle { width: 100%; background: #0984e3; color: white; border: none; border-radius: 16px; padding: 18px; font-weight: bold; font-size: 1.6rem; cursor: pointer; transition: 0.2s; margin-bottom: 8px; }
+/* 💬 채팅 토글 버튼 및 팝업창 스타일 */
+.btn-chat-toggle { width: 100%; background: #0984e3; color: white; border: none; border-radius: 16px; padding: 18px; font-weight: bold; font-size: 1.6rem; cursor: pointer; transition: 0.2s; margin-top: 10px; margin-bottom: 8px; flex-shrink: 0; }
 .btn-chat-toggle:hover { background: #074b83; }
 
 .chat-popup { background: #1a1c23; border: 4px solid #ffcb05; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; height: 440px; position: relative; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 50; }
 .chat-popup.hidden { display: none; }
 
-.chat-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 10px; margin-bottom: 14px; font-size: 1.6rem; font-weight: bold; color: #ffcb05; }
+.chat-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 10px; margin-bottom: 14px; font-size: 1.6rem; font-weight: bold; color: #ffcb05; flex-shrink: 0; }
 .chat-popup-close-btn { background: none; border: none; color: #aaa; font-size: 2.4rem; cursor: pointer; }
 .chat-popup-close-btn:hover { color: #fff; }
 
-.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 14px; }
+.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 14px; max-height: 280px; }
 .chat-item { font-size: 1.4rem; line-height: 1.4; word-break: break-all; background: #252836; padding: 10px 14px; border-radius: 8px; }
 .chat-sender { font-weight: bold; color: #ffcb05; margin-right: 8px; }
 .chat-text { color: #ffffff; }
 .chat-time { font-size: 1.2rem; color: #777; float: right; margin-top: 4px; }
 
-.chat-input-row { display: flex; gap: 10px; }
+.chat-input-row { display: flex; gap: 10px; flex-shrink: 0; }
 .chat-input-row input { flex: 1; background: #252836; border: 2px solid #444; border-radius: 8px; padding: 14px 18px; color: #fff; font-size: 1.5rem; }
 .chat-input-row button { background: #ffcb05; color: #111; border: none; border-radius: 8px; padding: 14px 24px; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
 .chat-input-row button:hover { background: #ffe066; }
@@ -105,7 +105,7 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .row-label.lvl2 { color: #74b9ff; }
 .row-label.lvl1 { color: #55efc4; }
 
-/* 덱 슬롯 (2배 확대: 110*2 = 220px, 195*2 = 390px) */
+/* 덱 슬롯 (2배 확대) */
 .deck-slot { width: 220px; height: 390px; flex-shrink: 0; }
 .deck-card { width: 100%; height: 100%; background: linear-gradient(135deg, #2c3e50, #1a252f); border: 4px solid #ffcb05; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
 .deck-card-inner { flex: 1; width: 100%; border: 3px solid #444; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #111319; padding: 8px; gap: 8px; overflow: hidden; }
@@ -117,7 +117,7 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 
 .card-row { display: flex; gap: 20px; flex: 1; }
 
-/* 마켓 카드 (2배 확대: 130*2=260px, 195*2=390px) */
+/* 마켓 카드 (2배 확대) */
 .card { width: 260px; height: 390px; background: #2f3446; border: 4px solid #444a5d; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
 .card.rare { border-color: #ffeaa7; }
 .card.legendary { border-color: #a29bfe; }

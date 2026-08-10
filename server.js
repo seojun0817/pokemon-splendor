@@ -137,7 +137,6 @@ io.on('connection', (socket) => {
     if (gameState.started) return socket.emit('errorMsg', '이미 게임이 시작되었습니다.');
     if (gameState.players.length >= 4) return socket.emit('errorMsg', '방이 가득 찼습니다.');
 
-    // 💡 [object Object] 방어 코드
     let playerName = typeof data === 'object' && data !== null ? data.name : data;
     if (!playerName || typeof playerName !== 'string') {
       playerName = `플레이어 ${gameState.players.length + 1}`;
@@ -308,12 +307,15 @@ io.on('connection', (socket) => {
         return socket.emit('errorMsg', '카드를 구매하기 위한 토큰(자원)이 부족합니다.');
       }
 
+      // 일반 볼 토큰 차감 및 은행 반환
       for (const [type, payVal] of Object.entries(paymentTokens)) {
         if (payVal > 0) {
           player.tokens[type] -= payVal;
           gameState.tokens[type] += payVal;
         }
       }
+
+      // 💡 마스터볼 차감 및 은행 반환 로직 추가 수정 완료
       if (neededMaster > 0) {
         player.tokens.master -= neededMaster;
         gameState.tokens.master += neededMaster;

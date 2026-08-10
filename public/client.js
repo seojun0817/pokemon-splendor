@@ -29,12 +29,12 @@ socket.on('gameOver', (data) => {
   alert(`🎉 게임 종료! 최종 승리자: [${data.character}] ${data.winner} (${data.points}점)`);
 });
 
+// 💡 참가하기 버튼 이벤트 명확하게 수정
 document.getElementById('btnJoin').addEventListener('click', () => {
   const nameInput = document.getElementById('playerName');
   const name = nameInput.value.trim();
   if (!name) return alert('이름을 입력해주세요.');
   
-  // 💡 확실하게 순수 문자열만 전송
   socket.emit('joinRoom', name);
   
   nameInput.disabled = true;
@@ -115,22 +115,27 @@ const btnToggleChat = document.getElementById('btnToggleChat');
 const chatPopup = document.getElementById('chat-popup');
 const chatPopupClose = document.getElementById('chat-popup-close');
 
-btnToggleChat.addEventListener('click', () => {
-  chatPopup.classList.toggle('hidden');
-  if (!chatPopup.classList.contains('hidden')) {
-    btnToggleChat.innerText = '💬 실시간 채팅창 닫기';
-  } else {
-    btnToggleChat.innerText = '💬 실시간 채팅창 열기';
-  }
-});
+if (btnToggleChat) {
+  btnToggleChat.addEventListener('click', () => {
+    chatPopup.classList.toggle('hidden');
+    if (!chatPopup.classList.contains('hidden')) {
+      btnToggleChat.innerText = '💬 실시간 채팅창 닫기';
+    } else {
+      btnToggleChat.innerText = '💬 실시간 채팅창 열기';
+    }
+  });
+}
 
-chatPopupClose.addEventListener('click', () => {
-  chatPopup.classList.add('hidden');
-  btnToggleChat.innerText = '💬 실시간 채팅창 열기';
-});
+if (chatPopupClose) {
+  chatPopupClose.addEventListener('click', () => {
+    chatPopup.classList.add('hidden');
+    if (btnToggleChat) btnToggleChat.innerText = '💬 실시간 채팅창 열기';
+  });
+}
 
 function sendChat() {
   const input = document.getElementById('chatInput');
+  if (!input) return;
   const msg = input.value;
   if (!msg.trim()) return;
 
@@ -138,10 +143,17 @@ function sendChat() {
   input.value = '';
 }
 
-document.getElementById('btnSendChat').addEventListener('click', sendChat);
-document.getElementById('chatInput').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendChat();
-});
+const btnSendChat = document.getElementById('btnSendChat');
+if (btnSendChat) {
+  btnSendChat.addEventListener('click', sendChat);
+}
+
+const chatInput = document.getElementById('chatInput');
+if (chatInput) {
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendChat();
+  });
+}
 
 socket.on('receiveChatMessage', (data) => {
   const chatLogs = document.getElementById('chat-logs');
@@ -216,14 +228,21 @@ function openPlayerPokemonModal(playerId) {
   document.getElementById('pokemon-modal').style.display = 'flex';
 }
 
-document.getElementById('modal-close-btn').addEventListener('click', () => {
-  document.getElementById('pokemon-modal').style.display = 'none';
-});
-document.getElementById('pokemon-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'pokemon-modal') {
+const modalCloseBtn = document.getElementById('modal-close-btn');
+if (modalCloseBtn) {
+  modalCloseBtn.addEventListener('click', () => {
     document.getElementById('pokemon-modal').style.display = 'none';
-  }
-});
+  });
+}
+
+const pokemonModal = document.getElementById('pokemon-modal');
+if (pokemonModal) {
+  pokemonModal.addEventListener('click', (e) => {
+    if (e.target.id === 'pokemon-modal') {
+      document.getElementById('pokemon-modal').style.display = 'none';
+    }
+  });
+}
 
 function render() {
   if (!currentGameState) return;
@@ -282,7 +301,7 @@ function render() {
       
       turnSound.currentTime = 0;
       turnSound.play().catch(err => {
-        console.log("브라우저 자동재생 정책으로 사운드 재생이 차단될 수 있습니다:", err);
+        console.log("사운드 재생 차단:", err);
       });
     }
   }
@@ -454,9 +473,56 @@ function render() {
   });
 }
 
-function buyCard(cardId, isEvolution, isReserved) { 
-  socket.emit('buyCard', { cardId, isEvolution, isReserved }); 
+function buyCard(cardId, isEvolution, isReserved) {
+  if (!currentGameState) return;
+  const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
+  if (!myPlayer) return;
+
+  let targetCard = null;
+  if (isReserved) {
+    targetCard = myPlayer.reserved.find(c => c.id === cardId);
+  } else {
+    ['level1', 'level2', 'level3', 'rare', 'legendary'].forEach(lvl => {
+      const found = currentGameState.market[lvl].find(c => c.id === cardId);
+      if (found) targetCard = found;
+    });
+  }
+
+  if (!targetCard) return;
+
+  if (!isEvolution) {
+    const currentBonus = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
+    myPlayer.cards.forEach(c => {
+      const cnt = c.energyCount || 1;
+      if (currentBonus[c.energy] !== undefined) currentBonus[c.energy] += cnt;
+    });
+
+    const reqCost = targetCard.cost;
+    let neededMaster = 0;
+
+    for (const [type, costVal] of Object.entries(reqCost)) {
+      const bonusVal = currentBonus[type] || 0;
+      const costAfterBonus = Math.max(0, costVal - bonusVal);
+      const myTokenVal = myPlayer.tokens[type] || 0;
+
+      if (myTokenVal < costAfterBonus) {
+        neededMaster += (costAfterBonus - myTokenVal);
+      }
+    }
+
+    if (neededMaster > 0) {
+      if (myPlayer.tokens.master < neededMaster) {
+        return alert('카드를 구매하기 위한 토큰과 마스터볼이 부족합니다.');
+      }
+      
+      const confirmUse = confirm(`일반 토큰이 부족하여 마스터볼 ${neededMaster}개가 소모됩니다. 포획하시겠습니까?`);
+      if (!confirmUse) return;
+    }
+  }
+
+  socket.emit('buyCard', { cardId, isEvolution, isReserved });
 }
+
 function reserveCard(cardId) { 
   socket.emit('reserveCard', cardId); 
 }
