@@ -307,7 +307,6 @@ io.on('connection', (socket) => {
         return socket.emit('errorMsg', '카드를 구매하기 위한 토큰(자원)이 부족합니다.');
       }
 
-      // 일반 볼 토큰 차감 및 은행 반환
       for (const [type, payVal] of Object.entries(paymentTokens)) {
         if (payVal > 0) {
           player.tokens[type] -= payVal;
@@ -315,7 +314,6 @@ io.on('connection', (socket) => {
         }
       }
 
-      // 💡 마스터볼 차감 및 은행 반환 로직 추가 수정 완료
       if (neededMaster > 0) {
         player.tokens.master -= neededMaster;
         gameState.tokens.master += neededMaster;

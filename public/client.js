@@ -29,7 +29,6 @@ socket.on('gameOver', (data) => {
   alert(`🎉 게임 종료! 최종 승리자: [${data.character}] ${data.winner} (${data.points}점)`);
 });
 
-// 💡 참가하기 버튼 이벤트 명확하게 수정
 document.getElementById('btnJoin').addEventListener('click', () => {
   const nameInput = document.getElementById('playerName');
   const name = nameInput.value.trim();
@@ -473,6 +472,7 @@ function render() {
   });
 }
 
+// 💡 마스터볼 개수 계산 및 확인 팝업 로직 완벽 적용 (킵한 카드 포함)
 function buyCard(cardId, isEvolution, isReserved) {
   if (!currentGameState) return;
   const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
@@ -512,7 +512,7 @@ function buyCard(cardId, isEvolution, isReserved) {
 
     if (neededMaster > 0) {
       if (myPlayer.tokens.master < neededMaster) {
-        return alert('카드를 구매하기 위한 토큰과 마스터볼이 부족합니다.');
+        return alert(`카드를 구매하기 위한 마스터볼이 부족합니다. (필요: ${neededMaster}개, 보유: ${myPlayer.tokens.master}개)`);
       }
       
       const confirmUse = confirm(`일반 토큰이 부족하여 마스터볼 ${neededMaster}개가 소모됩니다. 포획하시겠습니까?`);
