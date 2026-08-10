@@ -58,7 +58,6 @@ function getBasicTokenCount(playerCount) {
   return 4;
 }
 
-// 💡 이미 획득한 포켓몬 카드의 영구 에너지 보너스 계산
 function getPlayerEnergyBonus(player) {
   const bonus = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
   player.cards.forEach(card => {
@@ -134,15 +133,21 @@ function nextTurn() {
 io.on('connection', (socket) => {
   socket.emit('init', { socketId: socket.id, gameState });
 
-  socket.on('joinRoom', (playerName) => {
+  socket.on('joinRoom', (data) => {
     if (gameState.started) return socket.emit('errorMsg', '이미 게임이 시작되었습니다.');
     if (gameState.players.length >= 4) return socket.emit('errorMsg', '방이 가득 찼습니다.');
+
+    // 💡 [object Object] 방어 코드
+    let playerName = typeof data === 'object' && data !== null ? data.name : data;
+    if (!playerName || typeof playerName !== 'string') {
+      playerName = `플레이어 ${gameState.players.length + 1}`;
+    }
 
     const assignedTrainer = AVAILABLE_TRAINERS[gameState.players.length];
 
     gameState.players.push({
       id: socket.id,
-      name: playerName || `플레이어 ${gameState.players.length + 1}`,
+      name: playerName.trim() || `플레이어 ${gameState.players.length + 1}`,
       character: assignedTrainer,
       tokens: { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0, master: 0 },
       cards: [],
@@ -262,7 +267,6 @@ io.on('connection', (socket) => {
 
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
 
-    // 💡 1. 이미 획득한 카드들의 영구 에너지 보너스 계산
     const currentBonus = getPlayerEnergyBonus(player);
 
     if (isEvolution) {
@@ -283,22 +287,20 @@ io.on('connection', (socket) => {
       addLog(`⚡ ${player.name}님이 [${targetCard.name}] 포켓몬으로 진화시켰습니다! (+${targetCard.points}점)`);
 
     } else {
-      // 💡 2. 일반 카드 구매 시 비용 검증 및 실제 토큰 차감(지불) 로직
       const reqCost = targetCard.cost;
       let neededMaster = 0;
       const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
-      // 필요한 토큰과 마스터볼 계산
       for (const [type, costVal] of Object.entries(reqCost)) {
         const bonusVal = currentBonus[type] || 0;
-        const costAfterBonus = Math.max(0, costVal - bonusVal); // 보너스 할인 적용
+        const costAfterBonus = Math.max(0, costVal - bonusVal);
         const myTokenVal = player.tokens[type] || 0;
 
         if (myTokenVal >= costAfterBonus) {
           paymentTokens[type] = costAfterBonus;
         } else {
           paymentTokens[type] = myTokenVal;
-          neededMaster += (costAfterBonus - myTokenVal); // 모자란 만큼 마스터볼 필요
+          neededMaster += (costAfterBonus - myTokenVal);
         }
       }
 
@@ -306,7 +308,6 @@ io.on('connection', (socket) => {
         return socket.emit('errorMsg', '카드를 구매하기 위한 토큰(자원)이 부족합니다.');
       }
 
-      // 💡 3. 계산된 토큰들을 플레이어 지갑에서 차감하고 은행으로 반환
       for (const [type, payVal] of Object.entries(paymentTokens)) {
         if (payVal > 0) {
           player.tokens[type] -= payVal;
@@ -396,7 +397,7 @@ io.on('connection', (socket) => {
     gameState.turnActions.mainActionDone = true;
     addLog(`🔒 ${player.name}님이 ${LEVEL_NAMES_KR[lvl]} 덱 맨 위에서 카드를 비밀 킵했습니다.${gotMaster ? ' (마스터볼 +1)' : ''}`);
 
-    io.emit('update`GameState', gameState); // 수정: 오타 방지
+    io.emit('updateGameState', gameState);
   });
 
   socket.on('discardToken', (color) => {

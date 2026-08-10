@@ -1,9 +1,8 @@
 const socket = io();
 let mySocketId = null;
 let currentGameState = null;
-let lastTurnPlayerId = null; // 턴 알림 및 사운드 중복 재생 방지용
+let lastTurnPlayerId = null;
 
-// 💡 턴 전환 효과음 객체 생성
 const turnSound = new Audio('/sounds/turn.mp3');
 
 let selectedDeltas = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
@@ -31,12 +30,14 @@ socket.on('gameOver', (data) => {
 });
 
 document.getElementById('btnJoin').addEventListener('click', () => {
-  const name = document.getElementById('playerName').value.trim();
+  const nameInput = document.getElementById('playerName');
+  const name = nameInput.value.trim();
   if (!name) return alert('이름을 입력해주세요.');
   
+  // 💡 확실하게 순수 문자열만 전송
   socket.emit('joinRoom', name);
   
-  document.getElementById('playerName').disabled = true;
+  nameInput.disabled = true;
   document.getElementById('btnJoin').disabled = true;
 });
 
@@ -110,7 +111,6 @@ document.getElementById('btnEndTurn').addEventListener('click', () => {
   socket.emit('endTurn');
 });
 
-// 채팅 팝업 토글 로직
 const btnToggleChat = document.getElementById('btnToggleChat');
 const chatPopup = document.getElementById('chat-popup');
 const chatPopupClose = document.getElementById('chat-popup-close');
@@ -159,7 +159,6 @@ socket.on('receiveChatMessage', (data) => {
   chatLogs.scrollTop = chatLogs.scrollHeight;
 });
 
-// 중앙 턴 알림 토스트 팝업 함수
 function showTurnToast(text) {
   const toast = document.getElementById('turn-toast');
   const toastText = document.getElementById('turn-toast-text');
@@ -277,12 +276,10 @@ function render() {
     document.getElementById('current-turn-player').innerText = `${turnPlayer.name} (${turnPlayer.character})`;
     document.getElementById('current-turn-avatar').src = `/images/p${turnPlayerIdx + 1}.png`;
 
-    // 💡 턴이 바뀔 때 중앙 토스트 팝업과 함께 turn.mp3 효과음 재생
     if (lastTurnPlayerId !== turnPlayer.id) {
       lastTurnPlayerId = turnPlayer.id;
       showTurnToast(`✨ ${turnPlayer.name}님의 턴입니다!`);
       
-      // 사운드 재생 (브라우저 정책에 의해 첫 상호작용 이후 정상 재생됨)
       turnSound.currentTime = 0;
       turnSound.play().catch(err => {
         console.log("브라우저 자동재생 정책으로 사운드 재생이 차단될 수 있습니다:", err);
