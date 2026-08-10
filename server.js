@@ -37,8 +37,6 @@ let gameState = {
   logs: []
 };
 
-const disconnectTimers = {};
-
 function addLog(msg) {
   const time = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   gameState.logs.unshift({ time, msg });
@@ -60,6 +58,7 @@ function getBasicTokenCount(playerCount) {
   return 4;
 }
 
+// 💡 이미 획득한 포켓몬 카드의 영구 에너지 보너스 계산
 function getPlayerEnergyBonus(player) {
   const bonus = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
   player.cards.forEach(card => {
@@ -135,23 +134,7 @@ function nextTurn() {
 io.on('connection', (socket) => {
   socket.emit('init', { socketId: socket.id, gameState });
 
-  socket.on('joinRoom', ({ name, persistentId }) => {
-    const existingPlayer = gameState.players.find(p => p.persistentId === persistentId);
-
-    if (existingPlayer) {
-      existingPlayer.id = socket.id;
-      existingPlayer.isDisconnected = false;
-
-      if (disconnectTimers[persistentId]) {
-        clearTimeout(disconnectTimers[persistentId]);
-        delete disconnectTimers[persistentId];
-      }
-
-      addLog(`🔌 ${existingPlayer.name}님이 게임에 다시 연결되었습니다.`);
-      io.emit('updateGameState', gameState);
-      return;
-    }
-
+  socket.on('joinRoom', (playerName) => {
     if (gameState.started) return socket.emit('errorMsg', '이미 게임이 시작되었습니다.');
     if (gameState.players.length >= 4) return socket.emit('errorMsg', '방이 가득 찼습니다.');
 
@@ -159,8 +142,7 @@ io.on('connection', (socket) => {
 
     gameState.players.push({
       id: socket.id,
-      persistentId: persistentId,
-      name: name || `플레이어 ${gameState.players.length + 1}`,
+      name: playerName || `플레이어 ${gameState.players.length + 1}`,
       character: assignedTrainer,
       tokens: { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0, master: 0 },
       cards: [],
@@ -280,6 +262,7 @@ io.on('connection', (socket) => {
 
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
 
+    // 💡 1. 이미 획득한 카드들의 영구 에너지 보너스 계산
     const currentBonus = getPlayerEnergyBonus(player);
 
     if (isEvolution) {
@@ -300,32 +283,40 @@ io.on('connection', (socket) => {
       addLog(`⚡ ${player.name}님이 [${targetCard.name}] 포켓몬으로 진화시켰습니다! (+${targetCard.points}점)`);
 
     } else {
+      // 💡 2. 일반 카드 구매 시 비용 검증 및 실제 토큰 차감(지불) 로직
       const reqCost = targetCard.cost;
       let neededMaster = 0;
+      const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
-      Object.keys(reqCost).forEach(type => {
-        if (type === 'master') {
-          neededMaster += reqCost[type];
+      // 필요한 토큰과 마스터볼 계산
+      for (const [type, costVal] of Object.entries(reqCost)) {
+        const bonusVal = currentBonus[type] || 0;
+        const costAfterBonus = Math.max(0, costVal - bonusVal); // 보너스 할인 적용
+        const myTokenVal = player.tokens[type] || 0;
+
+        if (myTokenVal >= costAfterBonus) {
+          paymentTokens[type] = costAfterBonus;
         } else {
-          const costAfterBonus = Math.max(0, reqCost[type] - (currentBonus[type] || 0));
-          if (player.tokens[type] < costAfterBonus) {
-            neededMaster += (costAfterBonus - player.tokens[type]);
-          }
+          paymentTokens[type] = myTokenVal;
+          neededMaster += (costAfterBonus - myTokenVal); // 모자란 만큼 마스터볼 필요
         }
-      });
+      }
 
-      if (player.tokens.master < neededMaster) return socket.emit('errorMsg', '토큰(자원)이 부족합니다.');
+      if (player.tokens.master < neededMaster) {
+        return socket.emit('errorMsg', '카드를 구매하기 위한 토큰(자원)이 부족합니다.');
+      }
 
-      Object.keys(reqCost).forEach(type => {
-        if (type !== 'master') {
-          const costAfterBonus = Math.max(0, reqCost[type] - (currentBonus[type] || 0));
-          const payNormal = Math.min(player.tokens[type], costAfterBonus);
-          player.tokens[type] -= payNormal;
-          gameState.tokens[type] += payNormal;
+      // 💡 3. 계산된 토큰들을 플레이어 지갑에서 차감하고 은행으로 반환
+      for (const [type, payVal] of Object.entries(paymentTokens)) {
+        if (payVal > 0) {
+          player.tokens[type] -= payVal;
+          gameState.tokens[type] += payVal;
         }
-      });
-      player.tokens.master -= neededMaster;
-      gameState.tokens.master += neededMaster;
+      }
+      if (neededMaster > 0) {
+        player.tokens.master -= neededMaster;
+        gameState.tokens.master += neededMaster;
+      }
 
       player.cards.push(targetCard);
       gameState.turnActions.mainActionDone = true;
@@ -405,7 +396,7 @@ io.on('connection', (socket) => {
     gameState.turnActions.mainActionDone = true;
     addLog(`🔒 ${player.name}님이 ${LEVEL_NAMES_KR[lvl]} 덱 맨 위에서 카드를 비밀 킵했습니다.${gotMaster ? ' (마스터볼 +1)' : ''}`);
 
-    io.emit('updateGameState', gameState);
+    io.emit('update`GameState', gameState); // 수정: 오타 방지
   });
 
   socket.on('discardToken', (color) => {
@@ -435,7 +426,6 @@ io.on('connection', (socket) => {
     io.emit('updateGameState', gameState);
   });
 
-  // 💡 실시간 채팅 메시지 수신 및 방송
   socket.on('sendChatMessage', (msg) => {
     const player = gameState.players.find(p => p.id === socket.id);
     if (!player) return;
@@ -454,28 +444,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    const player = gameState.players.find(p => p.id === socket.id);
-    if (!player) return;
-
-    player.isDisconnected = true;
-    addLog(`⚠️ ${player.name}님의 연결이 끊겼습니다. (5분 재접속 대기)`);
-
-    if (gameState.started && gameState.players[gameState.currentTurn].id === player.id) {
-      nextTurn();
-    }
-
+    gameState.players = gameState.players.filter(p => p.id !== socket.id);
+    if (gameState.players.length === 0) gameState.started = false;
     io.emit('updateGameState', gameState);
-
-    disconnectTimers[player.persistentId] = setTimeout(() => {
-      const pIdx = gameState.players.findIndex(p => p.persistentId === player.persistentId);
-      if (pIdx !== -1) {
-        addLog(`❌ ${gameState.players[pIdx].name}님이 제한 시간(5분)을 초과하여 퇴장 처리되었습니다.`);
-        gameState.players.splice(pIdx, 1);
-        if (gameState.players.length === 0) gameState.started = false;
-        io.emit('updateGameState', gameState);
-      }
-      delete disconnectTimers[player.persistentId];
-    }, 300000); // 5분
   });
 });
 

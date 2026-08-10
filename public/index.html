@@ -7,6 +7,11 @@
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+  <!-- 💡 턴 시작 알림 토스트 팝업 -->
+  <div id="turn-toast" class="turn-toast hidden">
+    <span id="turn-toast-text">OO의 턴입니다!</span>
+  </div>
+
   <!-- 대기실 화면 -->
   <div id="lobby">
     <h1>⚡ 포켓몬 스플랜더</h1>
@@ -38,7 +43,7 @@
 
     <div class="dashboard-layout">
       
-      <!-- 1. 좌측: 토큰 창고 및 교환 컨트롤 & 로그 패널 -->
+      <!-- 1. 좌측: 토큰 창고 및 게임 로그 (로그 공간 복원) -->
       <aside class="sidebar-tokens">
         <div class="panel-title">볼 토큰 창고 (+/- 교환)</div>
         <div class="token-grid">
@@ -113,7 +118,7 @@
         </div>
       </aside>
 
-      <!-- 2. 중앙: 포켓몬 마켓 진열대 및 덱 슬롯 -->
+      <!-- 2. 중앙: 마켓 진열대 및 덱 슬롯 -->
       <main class="market-section">
         <div class="market-row-container special-row-container">
           <div class="special-slot">
@@ -145,9 +150,24 @@
         </div>
       </main>
 
-      <!-- 3. 우측: 플레이어 현황 패널 -->
+      <!-- 3. 우측: 채팅 토글 버튼 및 플레이어 현황 패널 -->
       <aside class="sidebar-players">
-        <div class="panel-title">플레이어 현황</div>
+        <button id="btnToggleChat" class="btn-chat-toggle">💬 실시간 채팅창 열기</button>
+        
+        <!-- 💡 팝업형 채팅창 -->
+        <div id="chat-popup" class="chat-popup hidden">
+          <div class="chat-popup-header">
+            <span>💬 실시간 채팅</span>
+            <button id="chat-popup-close" class="chat-popup-close-btn">&times;</button>
+          </div>
+          <div id="chat-logs" class="chat-list"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="메시지 입력..." maxlength="100">
+            <button id="btnSendChat">전송</button>
+          </div>
+        </div>
+
+        <div class="panel-title" style="margin-top: 6px;">플레이어 현황</div>
         <div id="players-list"></div>
       </aside>
 

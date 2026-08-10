@@ -1,12 +1,10 @@
 const socket = io();
 let mySocketId = null;
 let currentGameState = null;
+let lastTurnPlayerId = null; // 턴 알림 및 사운드 중복 재생 방지용
 
-let persistentId = localStorage.getItem('splendor_player_id');
-if (!persistentId) {
-  persistentId = 'user_' + Math.random().toString(36).substr(2, 9);
-  localStorage.setItem('splendor_player_id', persistentId);
-}
+// 💡 턴 전환 효과음 객체 생성
+const turnSound = new Audio('/sounds/turn.mp3');
 
 let selectedDeltas = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
@@ -19,13 +17,6 @@ const DECK_IMAGES = {
 socket.on('init', (data) => {
   mySocketId = data.socketId;
   currentGameState = data.gameState;
-  
-  const savedName = localStorage.getItem('splendor_player_name');
-  if (savedName) {
-    document.getElementById('playerName').value = savedName;
-    socket.emit('joinRoom', { name: savedName, persistentId });
-  }
-  
   render();
 });
 
@@ -43,8 +34,7 @@ document.getElementById('btnJoin').addEventListener('click', () => {
   const name = document.getElementById('playerName').value.trim();
   if (!name) return alert('이름을 입력해주세요.');
   
-  localStorage.setItem('splendor_player_name', name);
-  socket.emit('joinRoom', { name, persistentId });
+  socket.emit('joinRoom', name);
   
   document.getElementById('playerName').disabled = true;
   document.getElementById('btnJoin').disabled = true;
@@ -54,7 +44,7 @@ document.getElementById('btnStart').addEventListener('click', () => socket.emit(
 
 function adjustToken(color, change) {
   const currentDelta = selectedDeltas[color];
-  const myPlayer = currentGameState ? currentGameState.players.find(p => p.persistentId === persistentId) : null;
+  const myPlayer = currentGameState ? currentGameState.players.find(p => p.id === mySocketId) : null;
   const bankCount = currentGameState ? (currentGameState.tokens[color] || 0) : 0;
   const myTokenCount = myPlayer ? (myPlayer.tokens[color] || 0) : 0;
 
@@ -120,7 +110,25 @@ document.getElementById('btnEndTurn').addEventListener('click', () => {
   socket.emit('endTurn');
 });
 
-// 채팅 전송 및 수신 로직
+// 채팅 팝업 토글 로직
+const btnToggleChat = document.getElementById('btnToggleChat');
+const chatPopup = document.getElementById('chat-popup');
+const chatPopupClose = document.getElementById('chat-popup-close');
+
+btnToggleChat.addEventListener('click', () => {
+  chatPopup.classList.toggle('hidden');
+  if (!chatPopup.classList.contains('hidden')) {
+    btnToggleChat.innerText = '💬 실시간 채팅창 닫기';
+  } else {
+    btnToggleChat.innerText = '💬 실시간 채팅창 열기';
+  }
+});
+
+chatPopupClose.addEventListener('click', () => {
+  chatPopup.classList.add('hidden');
+  btnToggleChat.innerText = '💬 실시간 채팅창 열기';
+});
+
 function sendChat() {
   const input = document.getElementById('chatInput');
   const msg = input.value;
@@ -151,6 +159,24 @@ socket.on('receiveChatMessage', (data) => {
   chatLogs.scrollTop = chatLogs.scrollHeight;
 });
 
+// 중앙 턴 알림 토스트 팝업 함수
+function showTurnToast(text) {
+  const toast = document.getElementById('turn-toast');
+  const toastText = document.getElementById('turn-toast-text');
+  if (!toast || !toastText) return;
+
+  toastText.innerText = text;
+  toast.classList.remove('hidden');
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 300);
+  }, 1500);
+}
+
 function updateTokenSelectionUI() {
   Object.keys(selectedDeltas).forEach(color => {
     const statusEl = document.getElementById(`delta-${color}`);
@@ -171,7 +197,7 @@ function updateTokenSelectionUI() {
 }
 
 function openPlayerPokemonModal(playerId) {
-  const player = currentGameState.players.find(p => p.id === playerId || p.persistentId === playerId);
+  const player = currentGameState.players.find(p => p.id === playerId);
   if (!player) return;
 
   document.getElementById('modal-player-title').innerText = `⚡ ${player.name} (${player.character})의 보유 포켓몬`;
@@ -222,7 +248,7 @@ function render() {
         item.innerHTML = `
           <img src="/images/p${idx + 1}.png" class="lobby-player-avatar" alt="p${idx + 1}">
           <div class="lobby-player-info">
-            <span class="lobby-player-name">${p.name} ${p.persistentId === persistentId ? ' (나)' : ''} ${p.isDisconnected ? '⚠️' : ''}</span>
+            <span class="lobby-player-name">${p.name} ${p.id === mySocketId ? ' (나)' : ''}</span>
             <span class="lobby-player-trainer">캐릭터: ${p.character}</span>
           </div>
         `;
@@ -230,7 +256,7 @@ function render() {
       });
     }
 
-    const isHost = players.length > 0 && players[0].persistentId === persistentId;
+    const isHost = players.length > 0 && players[0].id === mySocketId;
     const btnStart = document.getElementById('btnStart');
     if (isHost && players.length >= 2) {
       btnStart.style.display = 'inline-block';
@@ -248,8 +274,20 @@ function render() {
   const turnPlayer = currentGameState.players[turnPlayerIdx];
 
   if (turnPlayer) {
-    document.getElementById('current-turn-player').innerText = `${turnPlayer.name} (${turnPlayer.character})${turnPlayer.isDisconnected ? ' [끊김]' : ''}`;
+    document.getElementById('current-turn-player').innerText = `${turnPlayer.name} (${turnPlayer.character})`;
     document.getElementById('current-turn-avatar').src = `/images/p${turnPlayerIdx + 1}.png`;
+
+    // 💡 턴이 바뀔 때 중앙 토스트 팝업과 함께 turn.mp3 효과음 재생
+    if (lastTurnPlayerId !== turnPlayer.id) {
+      lastTurnPlayerId = turnPlayer.id;
+      showTurnToast(`✨ ${turnPlayer.name}님의 턴입니다!`);
+      
+      // 사운드 재생 (브라우저 정책에 의해 첫 상호작용 이후 정상 재생됨)
+      turnSound.currentTime = 0;
+      turnSound.play().catch(err => {
+        console.log("브라우저 자동재생 정책으로 사운드 재생이 차단될 수 있습니다:", err);
+      });
+    }
   }
 
   Object.keys(currentGameState.tokens).forEach(color => {
@@ -266,7 +304,7 @@ function render() {
     `).join('');
   }
 
-  const myPlayer = currentGameState.players.find(p => p.persistentId === persistentId);
+  const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
   const myReservedCount = myPlayer && myPlayer.reserved ? myPlayer.reserved.length : 0;
   const isReservedFull = myReservedCount >= 3;
 
@@ -337,15 +375,13 @@ function render() {
 
     const playerAvatarImg = `/images/p${idx + 1}.png`;
     const cardCount = p.cards.length;
-    const isMe = (p.persistentId === persistentId);
+    const isMe = (p.id === mySocketId);
 
     const pTotalTokens = Object.values(p.tokens).reduce((a, b) => a + b, 0);
     const needsDiscard = isMe && (pTotalTokens > 10);
 
     let warningHTML = '';
-    if (p.isDisconnected) {
-      warningHTML = `<div class="token-warning-banner">⚠️ 연결 끊김 (재접속 대기 중)</div>`;
-    } else if (needsDiscard) {
+    if (needsDiscard) {
       warningHTML = `<div class="token-warning-banner">⚠️ 보유 토큰 초과 (${pTotalTokens}/10)! 버릴 토큰을 선택하세요.</div>`;
     }
 
@@ -411,7 +447,7 @@ function render() {
         ${tokenItemsHTML}
       </div>
 
-      <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.persistentId}')">
+      <button class="btn-view-pokemon" onclick="openPlayerPokemonModal('${p.id}')">
         🔍 보유 포켓몬 이미지로 보기 (${cardCount}장)
       </button>
 
