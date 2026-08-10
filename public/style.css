@@ -26,7 +26,6 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .logo { font-size: 2.6rem; font-weight: 900; color: #ffcb05; text-shadow: 3px 3px #3d7dca; }
 .header-right-group { display: flex; align-items: center; gap: 20px; }
 
-/* 💡 방장 리셋 버튼 스타일 */
 .btn-host-reset { background: #e74c3c; color: white; border: none; border-radius: 30px; padding: 12px 24px; font-weight: bold; font-size: 1.4rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(231,76,60,0.4); }
 .btn-host-reset:hover { background: #c0392b; }
 
@@ -105,34 +104,30 @@ body { font-family: 'Pretendard', sans-serif; background-color: #1a1c23; color: 
 .card-actions button.btn-evo { background: #00b894; }
 .card-actions button.btn-keep { background: #6c5ce7; }
 
-/* 3. 우측 사이드바 (채팅창, 로그, 플레이어 현황) */
-.sidebar-right-panel { width: 620px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
+/* 3. 우측 사이드바 (확장된 너비: 960px) */
+.sidebar-right-panel { width: 960px; background: #252836; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; overflow-y: auto; max-height: calc(100vh - 120px); }
 
-/* 채팅 토글 및 팝업 */
-.btn-chat-toggle { width: 100%; background: #0984e3; color: white; border: none; border-radius: 16px; padding: 18px; font-weight: bold; font-size: 1.6rem; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
-.btn-chat-toggle:hover { background: #074b83; }
+/* 🌟 채팅창과 로그를 좌우 나란히 배치하는 래퍼 스타일 */
+.chat-log-side-wrapper { display: flex; gap: 20px; height: 340px; flex-shrink: 0; }
 
-.chat-popup { background: #1a1c23; border: 4px solid #ffcb05; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; height: 400px; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 50; }
-.chat-popup.hidden { display: none; }
+/* 채팅 패널 */
+.chat-panel { flex: 1; background: #1a1c23; border: 3px solid #ffcb05; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; height: 100%; }
+.chat-panel-header { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 12px; flex-shrink: 0; }
 
-.chat-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #333849; padding-bottom: 10px; margin-bottom: 14px; font-size: 1.6rem; font-weight: bold; color: #ffcb05; flex-shrink: 0; }
-.chat-popup-close-btn { background: none; border: none; color: #aaa; font-size: 2.4rem; cursor: pointer; }
-.chat-popup-close-btn:hover { color: #fff; }
-
-.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 14px; }
+.chat-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; margin-bottom: 12px; }
 .chat-item { font-size: 1.4rem; line-height: 1.4; word-break: break-all; background: #252836; padding: 10px 14px; border-radius: 8px; }
 .chat-sender { font-weight: bold; color: #ffcb05; margin-right: 8px; }
 .chat-text { color: #ffffff; }
 .chat-time { font-size: 1.2rem; color: #777; float: right; margin-top: 4px; }
 
 .chat-input-row { display: flex; gap: 10px; flex-shrink: 0; }
-.chat-input-row input { flex: 1; background: #252836; border: 2px solid #444; border-radius: 8px; padding: 14px 18px; color: #fff; font-size: 1.5rem; }
-.chat-input-row button { background: #ffcb05; color: #111; border: none; border-radius: 8px; padding: 14px 24px; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+.chat-input-row input { flex: 1; background: #252836; border: 2px solid #444; border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 1.5rem; }
+.chat-input-row button { background: #ffcb05; color: #111; border: none; border-radius: 8px; padding: 12px 20px; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
 .chat-input-row button:hover { background: #ffe066; }
 
 /* 게임 로그 패널 */
-.log-panel { background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; min-height: 220px; max-height: 300px; }
-.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 14px; flex-shrink: 0; }
+.log-panel { flex: 1; background: #1a1c23; border: 3px solid #333849; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; height: 100%; }
+.log-title { font-size: 1.6rem; font-weight: bold; color: #ffcb05; border-bottom: 2px solid #333849; padding-bottom: 8px; margin-bottom: 12px; flex-shrink: 0; }
 .log-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 8px; }
 .log-item { font-size: 1.3rem; line-height: 1.4; color: #d1d5db; background: #252836; padding: 10px 14px; border-radius: 8px; border-left: 6px solid #ffcb05; word-break: keep-all; }
 .log-time { font-size: 1.1rem; color: #777; margin-right: 8px; }

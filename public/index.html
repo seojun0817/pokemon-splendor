@@ -27,7 +27,6 @@
     <header class="top-header">
       <div class="logo">⚡ POKEMON SPLENDOR</div>
       <div class="header-right-group">
-        <!-- 💡 방장 전용 게임 리셋 버튼 -->
         <button id="btnResetGame" class="btn-host-reset" style="display:none;" onclick="resetGame()">🔄 게임 리셋</button>
         <div class="turn-indicator">
           <span>현재 턴:</span>
@@ -131,27 +130,29 @@
         </div>
       </div>
 
-      <!-- 3. 우측 사이드바: 채팅창, 로그, 플레이어 현황 및 킵한 카드 -->
+      <!-- 3. 우측 사이드바: 채팅창과 로그를 나란히 배치 & 플레이어 현황 -->
       <div class="sidebar-right-panel">
-        <button id="btnToggleChat" class="btn-chat-toggle">💬 실시간 채팅창 열기</button>
         
-        <div id="chat-popup" class="chat-popup hidden">
-          <div class="chat-popup-header">
-            <span>💬 실시간 채팅</span>
-            <button id="chat-popup-close" class="chat-popup-close-btn">&times;</button>
+        <!-- 🌟 채팅창과 게임 로그를 좌우 나란히 배치하는 컨테이너 -->
+        <div class="chat-log-side-wrapper">
+          <!-- 실시간 채팅 패널 -->
+          <div class="chat-panel">
+            <div class="chat-panel-header">💬 실시간 채팅</div>
+            <div id="chat-logs" class="chat-list"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="메시지 입력...">
+              <button id="btnSendChat">전송</button>
+            </div>
           </div>
-          <div id="chat-logs" class="chat-list"></div>
-          <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="메시지 입력...">
-            <button id="btnSendChat">전송</button>
+
+          <!-- 게임 로그 패널 -->
+          <div class="log-panel">
+            <div class="log-title">📜 게임 로그</div>
+            <div id="game-logs" class="log-list"></div>
           </div>
         </div>
 
-        <div class="log-panel">
-          <div class="log-title">📜 게임 로그</div>
-          <div id="game-logs" class="log-list"></div>
-        </div>
-
+        <!-- 플레이어 현황 -->
         <div class="panel-title" style="margin-top: 15px;">플레이어 현황</div>
         <div id="players-list" class="players-container"></div>
       </div>

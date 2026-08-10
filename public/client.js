@@ -42,7 +42,6 @@ document.getElementById('btnJoin').addEventListener('click', () => {
 
 document.getElementById('btnStart').addEventListener('click', () => socket.emit('startGame'));
 
-// 💡 방장 권한 게임 리셋 함수
 function resetGame() {
   if (confirm('정말로 게임을 처음부터 다시 시작하시겠습니까? (모든 진행 상황이 초기화됩니다)')) {
     socket.emit('resetGame');
@@ -116,28 +115,6 @@ document.getElementById('btnConfirmTokens').addEventListener('click', () => {
 document.getElementById('btnEndTurn').addEventListener('click', () => {
   socket.emit('endTurn');
 });
-
-const btnToggleChat = document.getElementById('btnToggleChat');
-const chatPopup = document.getElementById('chat-popup');
-const chatPopupClose = document.getElementById('chat-popup-close');
-
-if (btnToggleChat) {
-  btnToggleChat.addEventListener('click', () => {
-    chatPopup.classList.toggle('hidden');
-    if (!chatPopup.classList.contains('hidden')) {
-      btnToggleChat.innerText = '💬 실시간 채팅창 닫기';
-    } else {
-      btnToggleChat.innerText = '💬 실시간 채팅창 열기';
-    }
-  });
-}
-
-if (chatPopupClose) {
-  chatPopupClose.addEventListener('click', () => {
-    chatPopup.classList.add('hidden');
-    if (btnToggleChat) btnToggleChat.innerText = '💬 실시간 채팅창 열기';
-  });
-}
 
 function sendChat() {
   const input = document.getElementById('chatInput');
@@ -294,7 +271,6 @@ function render() {
   document.getElementById('lobby').style.display = 'none';
   document.getElementById('game-container').style.display = 'flex';
 
-  // 💡 내가 방장(첫 번째 플레이어)인지 확인하여 리셋 버튼 노출 제어
   const players = currentGameState.players;
   const isHost = players.length > 0 && players[0].id === mySocketId;
   const btnResetGame = document.getElementById('btnResetGame');
