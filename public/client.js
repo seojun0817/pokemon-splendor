@@ -57,6 +57,21 @@ function resetGame() {
   }
 }
 
+// 💡 카드 원본 이미지 팝업 함수
+function openFullImage(imgSrc) {
+  const modal = document.getElementById('full-image-modal');
+  const img = document.getElementById('full-image-display');
+  if (modal && img) {
+    img.src = imgSrc;
+    modal.style.display = 'flex';
+  }
+}
+
+function closeFullImage() {
+  const modal = document.getElementById('full-image-modal');
+  if (modal) modal.style.display = 'none';
+}
+
 function adjustPlayerToken(color, delta) {
   socket.emit('adjustPlayerToken', { color, delta });
 }
@@ -217,7 +232,7 @@ function openPlayerPokemonModal(playerId) {
     player.cards.forEach(card => {
       const cardDiv = document.createElement('div');
       cardDiv.className = 'modal-card-item';
-      cardDiv.innerHTML = `<img src="${card.image}" alt="${card.name}">`;
+      cardDiv.innerHTML = `<img src="${card.image}" alt="${card.name}" onclick="openFullImage('${card.image}')" style="cursor:pointer;">`;
       grid.appendChild(cardDiv);
     });
   }
@@ -250,7 +265,7 @@ function openReservedModal() {
     <div class="card rare" style="width:240px; height:360px; background:#2f3446; border:4px solid #6c5ce7; border-radius:14px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
       <div class="card-top"><span class="card-name">${card.name}</span></div>
       <div class="card-img-wrapper" style="flex:1; width:100%; background:#1a1c23; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin:8px 0;">
-        <img src="${card.image}" alt="${card.name}" style="width:100%; height:100%; object-fit:fill;">
+        <img src="${card.image}" alt="${card.name}" onclick="openFullImage('${card.image}')" style="width:100%; height:100%; object-fit:fill; cursor:pointer;">
       </div>
       <div class="card-actions">
         <button onclick="buyCard('${card.id}', false, true); closeReservedModal();">포획</button>
@@ -289,7 +304,7 @@ function render() {
   if (!currentGameState.started) {
     document.getElementById('lobby').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
-    
+
     const players = currentGameState.players;
     document.getElementById('lobby-count').innerText = players.length;
 
@@ -367,7 +382,8 @@ function render() {
   }
 
   const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
-  const isReservedFull = myPlayer && myPlayer.reserved ? myPlayer.reserved.length >= 3 : false;
+  const myReservedCount = myPlayer && myPlayer.reserved ? myPlayer.reserved.length : 0;
+  const isReservedFull = myReservedCount >= 3;
 
   ['level1', 'level2', 'level3'].forEach(lvl => {
     const deckSlot = document.getElementById(`deck-slot-${lvl}`);
@@ -407,7 +423,7 @@ function render() {
           <span class="card-name">${card.name}</span>
         </div>
 
-        <div class="card-img-wrapper">
+        <div class="card-img-wrapper" style="cursor:pointer;" title="클릭하여 원본 보기">
           <img src="${card.image}" alt="${card.name}" onerror="this.style.display='none'">
         </div>
 
@@ -423,6 +439,8 @@ function render() {
           ` : ''}
         </div>
       `;
+      // 이미지 클릭 시 원본 팝업 바인딩
+      cardEl.querySelector('.card-img-wrapper').addEventListener('click', () => openFullImage(card.image));
       container.appendChild(cardEl);
     });
   });
@@ -448,6 +466,7 @@ function render() {
     const ballColors = ['monster', 'super', 'hyper', 'heal', 'quick', 'master'];
     const tokenItemsHTML = ballColors.map(color => {
       const count = p.tokens[color] || 0;
+      
       let manualControl = '';
       if (isMe && isMyTurn) {
         manualControl = `
@@ -457,15 +476,16 @@ function render() {
           </div>
         `;
       }
+
       const discardBtn = (needsDiscard && count > 0 && color !== 'master')
         ? `<button class="btn-discard" onclick="discardToken('${color}')">버리기</button>`
         : '';
 
       return `
         <div class="player-token-item">
-          <img src="/images/${color}.png" style="width:28px;">
-          <span style="font-size:1.2rem; color:#a0a5b5; margin:0 6px;">${BALL_NAMES_KR[color]}</span>
-          <span style="font-size:1.5rem; font-weight:bold;">${count}</span>
+          <img src="/images/${color}.png" alt="${BALL_NAMES_KR[color]}"> 
+          <span style="font-size:1.2rem; color:#a0a5b5; margin-right:2px;">${BALL_NAMES_KR[color]}</span>
+          <span>${count}</span>
           ${manualControl}
           ${discardBtn}
         </div>
@@ -475,27 +495,29 @@ function render() {
     const reservedCount = p.reserved ? p.reserved.length : 0;
     let reservedSideHTML = '';
     
-    // 💡 킵한 카드 로직: 나에게는 카드들, 남들에게는 뒷면 이미지
     if (reservedCount > 0) {
       let reservedDisplay = '';
       if (isMe) {
         reservedDisplay = `
-          <div class="reserved-side-list" style="flex-wrap:wrap; gap:5px;">
+          <div class="reserved-side-list" style="display:flex; gap:6px; justify-content:center;">
             ${p.reserved.map(c => `
-              <div style="width:60px; height:80px; border:1px solid #444; border-radius:4px; overflow:hidden;">
-                <img src="${c.image}" style="width:100%; height:100%; object-fit:fill;">
+              <div style="width:65px; height:85px; border:2px solid #6c5ce7; border-radius:6px; overflow:hidden; cursor:pointer;" title="클릭하여 원본 보기">
+                <img src="${c.image}" onclick="openFullImage('${c.image}')" style="width:100%; height:100%; object-fit:fill;">
               </div>
             `).join('')}
           </div>
         `;
       } else {
         reservedDisplay = `
-          <div class="reserved-side-list" style="flex-wrap:wrap; gap:5px;">
-            ${p.reserved.map(c => `
-              <div style="width:60px; height:80px; border:1px solid #444; border-radius:4px; overflow:hidden;">
-                 <img src="/images/${c.level === 'level1' ? '101' : c.level === 'level2' ? '102' : '103'}.png" style="width:100%; height:100%; object-fit:fill;">
-              </div>
-            `).join('')}
+          <div class="reserved-side-list" style="display:flex; gap:6px; justify-content:center;">
+            ${p.reserved.map(c => {
+              const backImg = c.level === 'level1' ? '/images/101.png' : c.level === 'level2' ? '/images/102.png' : '/images/103.png';
+              return `
+                <div style="width:65px; height:85px; border:2px solid #444; border-radius:6px; overflow:hidden;">
+                  <img src="${backImg}" style="width:100%; height:100%; object-fit:fill;" alt="뒷면">
+                </div>
+              `;
+            }).join('')}
           </div>
         `;
       }
@@ -504,7 +526,7 @@ function render() {
         <div class="player-reserved-side-box">
           <div class="reserved-side-title">🔒 킵한 카드 (${reservedCount}/3)</div>
           ${reservedDisplay}
-          ${isMe ? `<button class="action-btn-secondary" style="width:100%; font-size:1.2rem; padding:8px 0; background:#6c5ce7; color:white; border-radius:8px; border:none; cursor:pointer;" onclick="openReservedModal()">포획/진화</button>` : ''}
+          ${isMe ? `<button class="action-btn-secondary" style="width:100%; font-size:1.2rem; padding:8px 0; background:#6c5ce7; color:white; border-radius:8px; border:none; cursor:pointer;" onclick="openReservedModal()">포획/진화 관리</button>` : ''}
         </div>
       `;
     }

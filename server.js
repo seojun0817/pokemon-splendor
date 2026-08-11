@@ -331,8 +331,6 @@ io.on('connection', (socket) => {
       const reqCost = targetCard.cost;
       let neededMaster = 0;
       const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
-      
-      // 💡 포획 로그용 변수
       const costSummary = [];
 
       for (const [type, costVal] of Object.entries(reqCost)) {
@@ -378,7 +376,6 @@ io.on('connection', (socket) => {
 
       player.cards.push(targetCard);
       gameState.turnActions.mainActionDone = true;
-      // 💡 포획한 토큰 내역 로그 추가
       addLog(`🐾 ${player.name}님이 [${targetCard.name}] 카드를 포획했습니다! (사용: ${costSummary.join(', ')}) (+${targetCard.points}점)`);
     }
 
@@ -420,6 +417,7 @@ io.on('connection', (socket) => {
     if (!targetCard) return socket.emit('errorMsg', '카드를 찾을 수 없습니다.');
     if (targetLvl === 'rare' || targetLvl === 'legendary') return socket.emit('errorMsg', '전설 및 희귀 카드는 킵할 수 없습니다.');
 
+    targetCard.level = targetLvl; // 💡 킵한 카드의 레벨 정보 저장
     player.reserved.push(targetCard);
     let gotMaster = false;
     if (gameState.tokens.master > 0) {
@@ -443,6 +441,7 @@ io.on('connection', (socket) => {
     if (!gameState.decks[lvl] || gameState.decks[lvl].length === 0) return socket.emit('errorMsg', '해당 덱에 남은 카드가 없습니다.');
 
     const targetCard = gameState.decks[lvl].shift();
+    targetCard.level = lvl; // 💡 킵한 카드의 레벨 정보 저장
     player.reserved.push(targetCard);
 
     let gotMaster = false;
