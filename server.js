@@ -184,22 +184,20 @@ io.on('connection', (socket) => {
     io.emit('updateGameState', gameState);
   });
 
-  // 💡 플레이어 인터페이스에서 직접 토큰을 수동으로 조절하는 기능
   socket.on('adjustPlayerToken', ({ color, delta }) => {
     const player = gameState.players[gameState.currentTurn];
     if (!player || player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
-    if (color === 'master') return socket.emit('errorMsg', '마스터볼은 수동으로 조절할 수 없습니다.');
 
     const currentTotal = Object.values(player.tokens).reduce((a, b) => a + b, 0);
 
     if (delta > 0) {
-      if (currentTotal >= 10) return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다.');
-      if (gameState.tokens[color] <= 0) return socket.emit('errorMsg', '은행에 해당 토큰이 없습니다.');
+      if (color !== 'master' && currentTotal >= 10) return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다.');
+      if (gameState.tokens[color] <= 0) return socket.emit('errorMsg', `은행에 ${BALL_NAMES_KR[color]} 토큰이 없습니다. (인원수별 총개수 한도 초과 불가)`);
       player.tokens[color] += 1;
       gameState.tokens[color] -= 1;
       addLog(`🛠️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰을 수동으로 +1 했습니다.`);
     } else if (delta < 0) {
-      if (player.tokens[color] <= 0) return socket.emit('errorMsg', '보유한 토큰이 없습니다.');
+      if (player.tokens[color] <= 0) return socket.emit('errorMsg', `보유한 ${BALL_NAMES_KR[color]} 토큰이 없습니다.`);
       player.tokens[color] -= 1;
       gameState.tokens[color] += 1;
       addLog(`🛠️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰을 수동으로 -1 했습니다.`);
@@ -333,6 +331,9 @@ io.on('connection', (socket) => {
       const reqCost = targetCard.cost;
       let neededMaster = 0;
       const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
+      
+      // 💡 포획 로그용 변수
+      const costSummary = [];
 
       for (const [type, costVal] of Object.entries(reqCost)) {
         const bonusVal = currentBonus[type] || 0;
@@ -358,12 +359,14 @@ io.on('connection', (socket) => {
           }
           player.tokens[type] -= payVal;
           gameState.tokens[type] += payVal;
+          costSummary.push(`${BALL_NAMES_KR[type]} ${payVal}개`);
         }
       }
 
       if (neededMaster > 0) {
         player.tokens.master -= neededMaster;
         gameState.tokens.master += neededMaster;
+        costSummary.push(`${BALL_NAMES_KR['master']} ${neededMaster}개`);
       }
 
       Object.keys(player.tokens).forEach(t => {
@@ -375,7 +378,8 @@ io.on('connection', (socket) => {
 
       player.cards.push(targetCard);
       gameState.turnActions.mainActionDone = true;
-      addLog(`🐾 ${player.name}님이 [${targetCard.name}] 카드를 포획했습니다! (+${targetCard.points}점)`);
+      // 💡 포획한 토큰 내역 로그 추가
+      addLog(`🐾 ${player.name}님이 [${targetCard.name}] 카드를 포획했습니다! (사용: ${costSummary.join(', ')}) (+${targetCard.points}점)`);
     }
 
     player.points = player.cards.reduce((sum, c) => sum + c.points, 0);

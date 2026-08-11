@@ -48,7 +48,7 @@ function resetGame() {
   }
 }
 
-// 💡 플레이어 인터페이스 내 토큰 수동 조절 함수
+// 💡 플레이어 인터페이스 내 토큰 수동 조절 함수 (마스터볼 포함)
 function adjustPlayerToken(color, delta) {
   socket.emit('adjustPlayerToken', { color, delta });
 }
@@ -400,9 +400,9 @@ function render() {
     const tokenItemsHTML = ballColors.map(color => {
       const count = p.tokens[color] || 0;
       
-      // 💡 내 턴이고 내 카드일 경우, 일반 토큰 옆에 수동으로 조절할 수 있는 + - 버튼 추가
+      // 💡 내 턴이고 내 카드일 경우, 마스터볼을 포함한 모든 토큰에 수동 조절 (+/-) 버튼 노출
       let manualControl = '';
-      if (isMe && isMyTurn && color !== 'master') {
+      if (isMe && isMyTurn) {
         manualControl = `
           <div class="manual-token-btns">
             <button class="btn-token-pm" onclick="adjustPlayerToken('${color}', -1)">-</button>
