@@ -7,6 +7,15 @@ const turnSound = new Audio('/sounds/turn.mp3');
 
 let selectedDeltas = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
+const BALL_NAMES_KR = {
+  monster: '몬스터볼',
+  super: '슈퍼볼',
+  hyper: '하이퍼볼',
+  heal: '힐볼',
+  quick: '퀵볼',
+  master: '마스터볼'
+};
+
 const DECK_IMAGES = {
   level1: '/images/101.png',
   level2: '/images/102.png',
@@ -48,7 +57,6 @@ function resetGame() {
   }
 }
 
-// 💡 플레이어 인터페이스 내 토큰 수동 조절 함수 (마스터볼 포함)
 function adjustPlayerToken(color, delta) {
   socket.emit('adjustPlayerToken', { color, delta });
 }
@@ -216,6 +224,49 @@ function openPlayerPokemonModal(playerId) {
   document.getElementById('pokemon-modal').style.display = 'flex';
 }
 
+function openReservedModal() {
+  const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
+  if (!myPlayer || !myPlayer.reserved || myPlayer.reserved.length === 0) return alert('킵한 카드가 없습니다.');
+
+  let modal = document.getElementById('reserved-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'reserved-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="reserved-modal-title">🔒 내 킵한 카드 관리</h2>
+          <button class="modal-close-btn" onclick="closeReservedModal()">&times;</button>
+        </div>
+        <div class="modal-card-grid" id="reserved-modal-grid"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const grid = document.getElementById('reserved-modal-grid');
+  grid.innerHTML = myPlayer.reserved.map(card => `
+    <div class="card rare" style="width:240px; height:360px; background:#2f3446; border:4px solid #6c5ce7; border-radius:14px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+      <div class="card-top"><span class="card-name">${card.name}</span></div>
+      <div class="card-img-wrapper" style="flex:1; width:100%; background:#1a1c23; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center; margin:8px 0;">
+        <img src="${card.image}" alt="${card.name}" style="width:100%; height:100%; object-fit:fill;">
+      </div>
+      <div class="card-actions">
+        <button onclick="buyCard('${card.id}', false, true); closeReservedModal();">포획</button>
+        ${card.evolutionFrom ? `<button class="btn-evo" onclick="buyCard('${card.id}', true, true); closeReservedModal();">진화</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  modal.style.display = 'flex';
+}
+
+function closeReservedModal() {
+  const modal = document.getElementById('reserved-modal');
+  if (modal) modal.style.display = 'none';
+}
+
 const modalCloseBtn = document.getElementById('modal-close-btn');
 if (modalCloseBtn) {
   modalCloseBtn.addEventListener('click', () => {
@@ -238,7 +289,7 @@ function render() {
   if (!currentGameState.started) {
     document.getElementById('lobby').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
-
+    
     const players = currentGameState.players;
     document.getElementById('lobby-count').innerText = players.length;
 
@@ -316,8 +367,7 @@ function render() {
   }
 
   const myPlayer = currentGameState.players.find(p => p.id === mySocketId);
-  const myReservedCount = myPlayer && myPlayer.reserved ? myPlayer.reserved.length : 0;
-  const isReservedFull = myReservedCount >= 3;
+  const isReservedFull = myPlayer && myPlayer.reserved ? myPlayer.reserved.length >= 3 : false;
 
   ['level1', 'level2', 'level3'].forEach(lvl => {
     const deckSlot = document.getElementById(`deck-slot-${lvl}`);
@@ -381,7 +431,6 @@ function render() {
   playersList.innerHTML = '';
 
   currentGameState.players.forEach((p, idx) => {
-    const pEl = document.createElement('div');
     const isMe = (p.id === mySocketId);
     const isMyTurn = (idx === turnPlayerIdx);
 
@@ -399,8 +448,6 @@ function render() {
     const ballColors = ['monster', 'super', 'hyper', 'heal', 'quick', 'master'];
     const tokenItemsHTML = ballColors.map(color => {
       const count = p.tokens[color] || 0;
-      
-      // 💡 내 턴이고 내 카드일 경우, 마스터볼을 포함한 모든 토큰에 수동 조절 (+/-) 버튼 노출
       let manualControl = '';
       if (isMe && isMyTurn) {
         manualControl = `
@@ -410,38 +457,54 @@ function render() {
           </div>
         `;
       }
-
       const discardBtn = (needsDiscard && count > 0 && color !== 'master')
         ? `<button class="btn-discard" onclick="discardToken('${color}')">버리기</button>`
         : '';
 
       return `
         <div class="player-token-item">
-          <img src="/images/${color}.png"> 
-          <span>${count}</span>
+          <img src="/images/${color}.png" style="width:28px;">
+          <span style="font-size:1.2rem; color:#a0a5b5; margin:0 6px;">${BALL_NAMES_KR[color]}</span>
+          <span style="font-size:1.5rem; font-weight:bold;">${count}</span>
           ${manualControl}
           ${discardBtn}
         </div>
       `;
     }).join('');
 
+    const reservedCount = p.reserved ? p.reserved.length : 0;
     let reservedSideHTML = '';
-    if (isMe && p.reserved && p.reserved.length > 0) {
-      const reservedItems = p.reserved.map(c => `
-        <div class="mini-reserved-card">
-          <img src="${c.image}" alt="${c.name}">
-          <span>${c.name}</span>
-          <div class="mini-card-actions">
-            <button onclick="buyCard('${c.id}', false, true)">포획</button>
-            ${c.evolutionFrom ? `<button class="btn-evo" onclick="buyCard('${c.id}', true, true)">진화</button>` : ''}
+    
+    // 💡 킵한 카드 로직: 나에게는 카드들, 남들에게는 뒷면 이미지
+    if (reservedCount > 0) {
+      let reservedDisplay = '';
+      if (isMe) {
+        reservedDisplay = `
+          <div class="reserved-side-list" style="flex-wrap:wrap; gap:5px;">
+            ${p.reserved.map(c => `
+              <div style="width:60px; height:80px; border:1px solid #444; border-radius:4px; overflow:hidden;">
+                <img src="${c.image}" style="width:100%; height:100%; object-fit:fill;">
+              </div>
+            `).join('')}
           </div>
-        </div>
-      `).join('');
+        `;
+      } else {
+        reservedDisplay = `
+          <div class="reserved-side-list" style="flex-wrap:wrap; gap:5px;">
+            ${p.reserved.map(c => `
+              <div style="width:60px; height:80px; border:1px solid #444; border-radius:4px; overflow:hidden;">
+                 <img src="/images/${c.level === 'level1' ? '101' : c.level === 'level2' ? '102' : '103'}.png" style="width:100%; height:100%; object-fit:fill;">
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
 
       reservedSideHTML = `
         <div class="player-reserved-side-box">
-          <div class="reserved-side-title">🔒 킵한 카드 (${p.reserved.length}/3)</div>
-          <div class="reserved-side-list">${reservedItems}</div>
+          <div class="reserved-side-title">🔒 킵한 카드 (${reservedCount}/3)</div>
+          ${reservedDisplay}
+          ${isMe ? `<button class="action-btn-secondary" style="width:100%; font-size:1.2rem; padding:8px 0; background:#6c5ce7; color:white; border-radius:8px; border:none; cursor:pointer;" onclick="openReservedModal()">포획/진화</button>` : ''}
         </div>
       `;
     }
