@@ -123,9 +123,7 @@ function nextTurn() {
     attempts++;
   } while (gameState.players[gameState.currentTurn].isDisconnected && attempts < gameState.players.length);
 
-  // 💡 턴 전환 시 행동 플래그를 완전히 강제 초기화
   gameState.turnActions = { mainActionDone: false, evolvedDone: false };
-  
   const currentP = gameState.players[gameState.currentTurn];
   if (currentP && !currentP.isDisconnected) {
     addLog(`🔄 ${currentP.name}님의 턴이 시작되었습니다.`);
@@ -183,6 +181,30 @@ io.on('connection', (socket) => {
     gameState.started = true;
     initGame();
     addLog('🔄 방장 권한으로 게임이 재시작되었습니다!');
+    io.emit('updateGameState', gameState);
+  });
+
+  // 💡 플레이어 인터페이스에서 직접 토큰을 수동으로 조절하는 기능
+  socket.on('adjustPlayerToken', ({ color, delta }) => {
+    const player = gameState.players[gameState.currentTurn];
+    if (!player || player.id !== socket.id) return socket.emit('errorMsg', '당신의 턴이 아닙니다.');
+    if (color === 'master') return socket.emit('errorMsg', '마스터볼은 수동으로 조절할 수 없습니다.');
+
+    const currentTotal = Object.values(player.tokens).reduce((a, b) => a + b, 0);
+
+    if (delta > 0) {
+      if (currentTotal >= 10) return socket.emit('errorMsg', '토큰은 최대 10개까지만 보유할 수 있습니다.');
+      if (gameState.tokens[color] <= 0) return socket.emit('errorMsg', '은행에 해당 토큰이 없습니다.');
+      player.tokens[color] += 1;
+      gameState.tokens[color] -= 1;
+      addLog(`🛠️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰을 수동으로 +1 했습니다.`);
+    } else if (delta < 0) {
+      if (player.tokens[color] <= 0) return socket.emit('errorMsg', '보유한 토큰이 없습니다.');
+      player.tokens[color] -= 1;
+      gameState.tokens[color] += 1;
+      addLog(`🛠️ ${player.name}님이 [${BALL_NAMES_KR[color]}] 토큰을 수동으로 -1 했습니다.`);
+    }
+
     io.emit('updateGameState', gameState);
   });
 
@@ -246,7 +268,7 @@ io.on('connection', (socket) => {
       const delta = selectedDeltas[color];
       player.tokens[color] += delta;
       gameState.tokens[color] -= delta;
-      if (player.tokens[color] < 0) player.tokens[color] = 0; // 💡 음수 방지 안전장치
+      if (player.tokens[color] < 0) player.tokens[color] = 0;
     });
 
     gameState.turnActions.mainActionDone = true;
@@ -312,7 +334,6 @@ io.on('connection', (socket) => {
       let neededMaster = 0;
       const paymentTokens = { monster: 0, super: 0, hyper: 0, heal: 0, quick: 0 };
 
-      // 💡 장기간 플레이 시 오차 방지를 위한 엄격한 토큰 차감 계산
       for (const [type, costVal] of Object.entries(reqCost)) {
         const bonusVal = currentBonus[type] || 0;
         const costAfterBonus = Math.max(0, costVal - bonusVal);
@@ -330,7 +351,6 @@ io.on('connection', (socket) => {
         return socket.emit('errorMsg', `마스터볼 토큰이 부족하여 포획할 수 없습니다. (필요: ${neededMaster}개, 보유: ${player.tokens.master}개)`);
       }
 
-      // 일반 토큰 차감 및 은행 반환 (음수 방지 검증 포함)
       for (const [type, payVal] of Object.entries(paymentTokens)) {
         if (payVal > 0) {
           if (player.tokens[type] < payVal) {
@@ -341,16 +361,11 @@ io.on('connection', (socket) => {
         }
       }
 
-      // 마스터볼 차감 및 은행 반환
       if (neededMaster > 0) {
-        if (player.tokens.master < neededMaster) {
-          return socket.emit('errorMsg', '마스터볼 수량이 부족합니다.');
-        }
         player.tokens.master -= neededMaster;
         gameState.tokens.master += neededMaster;
       }
 
-      // 💡 모든 토큰 수량이 음수(-)로 떨어지지 않도록 철저히 클램핑
       Object.keys(player.tokens).forEach(t => {
         if (player.tokens[t] < 0) player.tokens[t] = 0;
       });

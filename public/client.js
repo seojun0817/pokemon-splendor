@@ -48,6 +48,11 @@ function resetGame() {
   }
 }
 
+// 💡 플레이어 인터페이스 내 토큰 수동 조절 함수
+function adjustPlayerToken(color, delta) {
+  socket.emit('adjustPlayerToken', { color, delta });
+}
+
 function adjustToken(color, change) {
   const currentDelta = selectedDeltas[color];
   const myPlayer = currentGameState ? currentGameState.players.find(p => p.id === mySocketId) : null;
@@ -378,6 +383,7 @@ function render() {
   currentGameState.players.forEach((p, idx) => {
     const pEl = document.createElement('div');
     const isMe = (p.id === mySocketId);
+    const isMyTurn = (idx === turnPlayerIdx);
 
     const playerAvatarImg = `/images/p${idx + 1}.png`;
     const cardCount = p.cards.length;
@@ -393,10 +399,30 @@ function render() {
     const ballColors = ['monster', 'super', 'hyper', 'heal', 'quick', 'master'];
     const tokenItemsHTML = ballColors.map(color => {
       const count = p.tokens[color] || 0;
+      
+      // 💡 내 턴이고 내 카드일 경우, 일반 토큰 옆에 수동으로 조절할 수 있는 + - 버튼 추가
+      let manualControl = '';
+      if (isMe && isMyTurn && color !== 'master') {
+        manualControl = `
+          <div class="manual-token-btns">
+            <button class="btn-token-pm" onclick="adjustPlayerToken('${color}', -1)">-</button>
+            <button class="btn-token-pm" onclick="adjustPlayerToken('${color}', 1)">+</button>
+          </div>
+        `;
+      }
+
       const discardBtn = (needsDiscard && count > 0 && color !== 'master')
         ? `<button class="btn-discard" onclick="discardToken('${color}')">버리기</button>`
         : '';
-      return `<div class="player-token-item"><img src="/images/${color}.png"> ${count}${discardBtn}</div>`;
+
+      return `
+        <div class="player-token-item">
+          <img src="/images/${color}.png"> 
+          <span>${count}</span>
+          ${manualControl}
+          ${discardBtn}
+        </div>
+      `;
     }).join('');
 
     let reservedSideHTML = '';
@@ -421,7 +447,7 @@ function render() {
     }
 
     const innerCardHTML = `
-      <div class="player-card ${idx === turnPlayerIdx ? 'active-turn' : ''}">
+      <div class="player-card ${isMyTurn ? 'active-turn' : ''}">
         ${warningHTML}
         <div class="player-header">
           <img src="${playerAvatarImg}" class="player-avatar" alt="p${idx + 1}">
